@@ -1,0 +1,15 @@
+{
+    "require": {
+        "vlucas/phpdotenv": "^5.0",
+        "mpdf/mpdf": "^6.1",
+        "setasign/fpdi": "^1.6",
+        "phpoffice/phpword": "^1.2",
+        "sendgrid/sendgrid": "^8.1",
+        "fpdf/fpdf": "^1.86"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dotenv\\": "/vendor/vlucas/phpdotenv/src"
+        }
+    }
+}

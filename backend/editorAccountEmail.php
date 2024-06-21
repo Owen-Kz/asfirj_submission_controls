@@ -1,6 +1,6 @@
 <?php
 
-function ReviewConfirmationEmail($RecipientEmail, $reviewerEmail, $status){
+function EditorAccountEmail($RecipientEmail, $acceptInvitationLink, $rejectInvitationLink){
 
 require '../vendor/autoload.php'; // If you're using Composer (recommended)
 // Comment out the above line if not using Composer
@@ -18,6 +18,8 @@ $api = $_ENV['SENDGRID_API_KEY'];
 $senderEmail = $_ENV["SENDGRID_EMAIL"];
 
 
+
+
 if($RecipientEmail){
 
     $encryptedButton = md5($RecipientEmail);
@@ -28,11 +30,12 @@ try {
     // print $response->statusCode() . "\n";
     // print_r($response->headers());
     // print $response->body() . "\n";
-    $subject = "Review Request $status by $reviewerEmail";
+    $subject = "ASFIRJ Review Request";
     $message = "<h2> Hi,<h2>
-    <p> Your Request to Review an Article has been $status by the reviewer, Login to your dashboard to monitor the process</p>;
-    <p><center><h6>African Science Research Journal</h6></p>
-    ";
+    <p> You have been invited to review a submission on ASFIRJ.</p>
+    <p>please <a href=$acceptInvitationLink>Accept INvite</a> </p>
+    <p><a href=$rejectInvitationLink>$rejectInvitationLink</a> Reject invitaion</p>
+    <p><center><h6> ".date("Y")." African Science Research Journal</h6></center></p>";
 
         $email = new \SendGrid\Mail\Mail();
         $email->setFrom($senderEmail, "ASFIRJ");

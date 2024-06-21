@@ -21,7 +21,7 @@ $graphic_abstract = $_FILES["graphic_abstract"];
 $abstract = $_POST["abstract"];
 $corresponding_author = $_POSt["corresponding_author"];
 $Buffer = bin2hex(random_bytes(7)); // 10 bytes = 20 characters in hexadecimal representation
-$articleID = "ASFIRJ_submission_$Buffer";
+$articleID = "ASFIRJ_".date("Y")."_".bin2hex(random_bytes(7));;
 
 if($title){
 // first check if an Article with that title already ecists 

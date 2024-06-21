@@ -7,7 +7,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 $email = $data["encrypted"];
 
-$stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE md5(`email`) = ? AND `review_status` != 'review_submitted'");
+$stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE md5(`email`) = ? AND `status` != 'review_submitted' AND `status` != 'review_completed'");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();

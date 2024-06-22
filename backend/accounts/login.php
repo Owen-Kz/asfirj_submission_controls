@@ -50,7 +50,7 @@ if(isset($pass) && isset($email_post)){
 
         // $HOTEL =  $_SESSION["Hotel_name"];
 
-        $response = array('status' => 'success', 'message' => 'Logged in successfully', 'user_data' => $row, 'ip'=> $ip_add);
+        $response = array('status' => 'success', 'message' => 'Logged in successfully', 'user_data' => $row, 'ip'=> $ip_add, 'userEmail' => md5($userID));
         echo json_encode($response);
     }else{
         $response = array('status' => 'error', 'message' => 'Invalid Credentials', 'user_data' => "[]");

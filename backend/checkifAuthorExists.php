@@ -1,8 +1,17 @@
 <?php
 
 function CheckAccountExists($authorsPrefix, $authors_firstname, $authors_lastname, $authors_other_name, $authorsEmail, $affiliation, $affiliation_country,$affiliation_city){
-include "./db.php";
-include "./sendNewAccountEmail.php;";
+    // require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
+    // Comment out the above line if not using Composer
+    // require("<PATH TO>/sendgrid-php.php");
+    // If not using Composer, uncomment the above line and
+    // download sendgrid-php.zip from the latest release here,
+    // replacing <PATH TO> with the path to the sendgrid-php.php file,
+    // which is included in the download:
+    // https://github.com/sendgrid/sendgrid-php/releases
+    // Inmport Environment Variables
+    include __DIR__ .'/exportENV.php';
+    include __DIR__ .'/db.php';
 
 $password = bin2hex(random_bytes(6)); 
 $pass = password_hash($password, PASSWORD_DEFAULT);

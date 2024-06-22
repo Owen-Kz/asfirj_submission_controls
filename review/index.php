@@ -1,18 +1,25 @@
 <?php
-
-
 include "../backend/cors.php";
 include "../backend/db.php";
 
 function MoveFile($outputFile, $designatedDirectory, $newFilename){
     // Move the final merged PDF to the designated folder
-$designatedFolder = $designatedDirectory;
-if (!file_exists($designatedFolder)) {
-    mkdir($designatedFolder, 0777, true);
+$manuscriptFile = basename($_FILES[$outputFile]["name"]);
+$targetFile = "../uploads/reviews/". $manuscriptFile;
+if (!is_writable("../uploads/reviews/")) {
+    die("Target directory is not writable.");
 }
-// rename($outputFile, $designatedFolder . $outputFile); 
-move_uploaded_file(basename($outputFile["tmp_name"]), $outputFile);
-rename($designatedDirectory . basename($outputFile["name"]), $designatedDirectory.$newFilename);
+if (!file_exists("../uploads/reviews/")) {
+    mkdir("../uploads/reviews/", 0777, true);
+}
+if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {
+// move_uploaded_file($outputFile["tmp_name"], $targetFile);
+rename("../uploads/reviews/". $_FILES[$outputFile]["name"], "../uploads/reviews/".$newFilename);
+// print_r("File Uploaded");
+}else{
+   echo "Could Not Upload File ".json_encode($_FILES[$outputFile]);
+}
+
 
 }
 $Article_id = $_POST["article_id"];
@@ -23,27 +30,31 @@ $one_paragraph_comment = $_POST["paragraph_summary"];
 
 $one_paragraph_file = "";
 $one_paragraph_file_main = $_FILES["paragraph_summary_file"];
-if(isset($one_paragraph_file_main)){
+if(isset($one_paragraph_file_main) && $one_paragraph_file_main["size"] > 0 && isset($_FILES["paragraph_summary_file"]["tmp_name"])){
     $one_paragraph_file = "oneparagraph".time() . '-' . basename($one_paragraph_file_main["name"]);
-    MoveFile($one_paragraph_file_main, "/uploads/reviews", $one_paragraph_file);
+    MoveFile("paragraph_summary_file", __DIR__."/uploads/reviews", $one_paragraph_file);
 }
 
 
 $general_comment = $_POST["general_comment"];
 $general_comment_file = "";
 $general_comment_file_main = $_FILES["general_comment_file"];
-if(isset($general_comment_file_main)){
+
+if(isset($general_comment_file_main) && $general_comment_file_main["size"] > 0 && isset($_FILES["general_comment_file"]["tmp_name"])){
     $general_comment_file = "generalcomment".time() . '-' . basename($general_comment_file_main["name"]);
-    MoveFile($general_comment_file_main, "/uploads/reviews", $general_comment_file);
+
+    MoveFile("general_comment_file",  __DIR__."/uploads/reviews", $general_comment_file);
 }
 
 
 $specific_comment = $_POST["specific_comment"];
 $specific_comment_file = "";
 $specific_comment_file_main = $_FILES["specific_comment_file"];
-if(isset($specific_comment_file_main)){
+if(isset($specific_comment_file_main) && $specific_comment_file_main["size"] > 0 && isset($_FILES["specific_comment_file"]["tmp_name"])){
+
     $specific_comment_file = "specificcomment".time() . '-' . basename($specific_comment_file_main["name"]);
-    MoveFile($specific_comment_file_main, "/uploads/reviews", $specific_comment_file);
+
+    MoveFile("specific_comment_file",  __DIR__."/uploads/reviews", $specific_comment_file);
 }
 
 $accurately_reflect_manuscript_subject_score = $_POST["title_accuracy"];
@@ -82,7 +93,7 @@ $reviewStatus = $_POST["review_status"];
 
 if(isset($Article_id) && isset($Review_Id)){
     // Check if the reveiw Already Exists
-    $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `article_id` = ? AND md5(`reviewer_email`) = ?");
+    $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `article_id` = ? AND `reviewer_email`) = ?");
     $stmt->bind_param("ss", $Article_id, $reviewerEmail);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -143,7 +154,7 @@ if(isset($Article_id) && isset($Review_Id)){
     }else{
         // If this is the firsttime the review qa initiated
     // Add the Review to the database 
-    $stmt = $con->prepare("INSERT INTO `reviews`(article_id`, `review_id`, md5(`reviewer_email`), `one_paragraph_comment`, `one_paragraph_file`, `general_comment`, `general_comment_file`, `specific_comment`, `specific_comment_file`, `accurately_reflect_manuscript_subject_score`, `clearly_summarize_content_score`, `presents_what_is_known_score`, `gives_accurate_summary_score`, `purpose_clear_score`, `method_section_clear_score`, `study_materials_clearly_described_score`, `research_method_valid_score`, `ethical_standards_score`, `study_find_clearly_described_score`, `result_presented_logical_score`, `graphics_complement_result_score`, `table_follow_specified_standards_score`, `tables_add_value_or_distract_score`, `issues_with_title_score`, `manuscript_present_summary_of_key_findings_score`, `manuscript_highlight_strength_of_study_score`, `manuscript_compare_findings_score`, `manuscript_discuss_meaning_score`, `manuscript_describes_overall_story_score`, `conclusions_reflect_achievement_score`, `manuscript_describe_gaps_score`, `referencing_accurate_score`, `novelty_score`, `quality_score`, `scientific_accuracy_score`, `overall_merit_score`, `english_level_score`, `overall_recommendation`, `letter_to_editor`, `review_status`) VALUES (? ,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    $stmt = $con->prepare("INSERT INTO `reviews` (`article_id`, `review_id`, `reviewer_email`, `one_paragraph_comment`, `one_paragraph_file`, `general_comment`, `general_comment_file`, `specific_comment`, `specific_comment_file`, `accurately_reflect_manuscript_subject_score`, `clearly_summarize_content_score`, `presents_what_is_known_score`, `gives_accurate_summary_score`, `purpose_clear_score`, `method_section_clear_score`, `study_materials_clearly_described_score`, `research_method_valid_score`, `ethical_standards_score`, `study_find_clearly_described_score`, `result_presented_logical_score`, `graphics_complement_result_score`, `table_follow_specified_standards_score`, `tables_add_value_or_distract_score`, `issues_with_title_score`, `manuscript_present_summary_of_key_findings_score`, `manuscript_highlight_strength_of_study_score`, `manuscript_compare_findings_score`, `manuscript_discuss_meaning_score`, `manuscript_describes_overall_story_score`, `conclusions_reflect_achievement_score`, `manuscript_describe_gaps_score`, `referencing_accurate_score`, `novelty_score`, `quality_score`, `scientific_accuracy_score`, `overall_merit_score`, `english_level_score`, `overall_recommendation`, `letter_to_editor`, `review_status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
     $stmt->bind_param("ssssssssssssssssssssssssssssssssssssssss", $Article_id,
     $Review_Id,
     $Reviewed_by,

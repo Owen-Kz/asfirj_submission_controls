@@ -1,4 +1,3 @@
-<!-- GENERAl Signup for Authors  -->
 <?php
 
 include "../cors.php";
@@ -14,25 +13,18 @@ $lastname  = $data["lastname"];
 $othername = $data["othername"];
 $email = $data["email"];
 $affiliations = $data["affiliations"];
-$affiliations_country = $data["affliations_country"];
+$affiliations_country = $data["affiliations_country"];
 $affiliations_city = $data["affiliations_city"];
-$available_for_review = $data["available_for_review"];
+$available_for_review = $data["availableForReview"];
 $password = $data["password"];
 
-
-$stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `reviewer_email` =?");
-$stmt->bind_param("s", $email);
-if($stmt->execute()){
-    $result = $stmt->get_result();
-    $count = mysqli_num_rows($result);
-    if($count > 0){
 
 if(isset($email) && isset($password)){
     $pass = password_hash($password, PASSWORD_DEFAULT);
     $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
     $stmt->bind_param("s", $email);
     if(!$stmt){
-        $response = array("stauts"=>"error", "message"=>$stmt->error);
+        $response = array("status"=>"error", "message"=>$stmt->error);
                 echo json_encode($response);
     }else{
         $stmt->execute();
@@ -40,24 +32,26 @@ if(isset($email) && isset($password)){
 
         $count = mysqli_num_rows($result);
         if($count > 0){
-            echo "Account Already Exisits";
+            
+            $response = array("status"=>"error", "message"=>"Account Already Exists please login");
+            echo json_encode($response);
         }else{
             
-            $stmt = $con->prepare("INSERT INTO `authors_account` (`prefix`, `email`, `firstname`, `lastname`, `othername`, `affiliations`, `affiliation_country`, `affiliation_city`, `password`), VALUES (?,?,?,?,?,?,?,?,?)");
+            $stmt = $con->prepare("INSERT INTO `authors_account` (`prefix`, `email`, `firstname`, `lastname`, `othername`, `affiliations`, `affiliation_country`, `affiliation_city`, `password`, `is_available_for_review`) VALUES (?,?,?,?,?,?,?,?,?, ?)");
             if(!$stmt){
-                $response = array("stauts"=>"error", "message"=>$stmt->error);
+                $response = array("status"=>"error", "message"=>$stmt->error);
                 echo json_encode($response);
             }else{
-            $stmt->bind_param("sssssssss", $prefix, $email, $firstname, $lastname, $othername, $affiliations, $affiliations_country, $affiliations_city, $pass);
+            $stmt->bind_param("ssssssssss", $prefix, $email, $firstname, $lastname, $othername, $affiliations, $affiliations_country, $affiliations_city, $pass, $available_for_review);
             
             if($stmt->execute()){
 
                 SendWelcomeEmail($email);
 
-                $response = array("stauts"=>"success", "message"=>"Account Created Succesfully");
+                $response = array("status"=>"success", "message"=>"Account Created Successfully, Please verify your email $email");
                 echo json_encode($response);
             }else{
-                $response = array("stauts"=>"error", "message"=>"Could Not Create Account");
+                $response = array("status"=>"error", "message"=>"Could Not Create Account");
                 echo json_encode($response);
             }
         }
@@ -66,15 +60,7 @@ if(isset($email) && isset($password)){
         }
     }
 }else{
-    $response = array("stauts"=>"error", "message"=>"Pleae fill all fields");
+    $response = array("status"=>"error", "message"=>"Pleae fill all fields");
     echo json_encode($response);
 }
 
-    }else{
-        $response = array("stauts"=>"error", "message"=>"Your not Eligible for this request.");
-        echo json_encode($response);
-    }
-}else{
-    $response = array("stauts"=>"error", "message"=>$stmt->error);
-    echo json_encode($response);
-}

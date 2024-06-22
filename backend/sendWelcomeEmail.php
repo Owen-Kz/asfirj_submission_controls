@@ -2,17 +2,17 @@
 
 function SendWelcomeEmail($RecipientEmail){
 
-require '../vendor/autoload.php'; // If you're using Composer (recommended)
-// Comment out the above line if not using Composer
-// require("<PATH TO>/sendgrid-php.php");
-// If not using Composer, uncomment the above line and
-// download sendgrid-php.zip from the latest release here,
-// replacing <PATH TO> with the path to the sendgrid-php.php file,
-// which is included in the download:
-// https://github.com/sendgrid/sendgrid-php/releases
-// Inmport Environment Variables
-require "./exportENV.php";
-include "./db.php";
+    require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
+    // Comment out the above line if not using Composer
+    // require("<PATH TO>/sendgrid-php.php");
+    // If not using Composer, uncomment the above line and
+    // download sendgrid-php.zip from the latest release here,
+    // replacing <PATH TO> with the path to the sendgrid-php.php file,
+    // which is included in the download:
+    // https://github.com/sendgrid/sendgrid-php/releases
+    // Inmport Environment Variables
+    include __DIR__ .'/exportENV.php';
+    include __DIR__ .'/db.php';
 
 $api = $_ENV['SENDGRID_API_KEY'];
 $senderEmail = $_ENV["SENDGRID_EMAIL"];
@@ -45,7 +45,7 @@ try {
     // print_r($response->headers());
     // print $response->body() . "\n";
     $subject = "ASFIRJ Account Created";
-    $message = "<h2> Hi, $prefix. $RecipientName<h2>
+    $message = "<h2> Hi, $prefix $RecipientName<h2>
     <p> Welcome to ASFIRJ</p>
     <p><a href=https://authors.asfirj.org/verify?a=$encryptedButton>click here</a> to verify your account. </p>
     <p>Or paste this <a href=https://authors.asfirj.org/verify?a=$encryptedButton>https://authors.asfirj.org/verify?a=$encryptedButton</a> link in your browser</p>
@@ -62,23 +62,24 @@ try {
      
         $response = $sendgrid->send($email);
     
-        $response = array('status' => 'success', 'message' => 'Email sent', 'email' => $encryptedButton);
-        print $response;
+    //      print $response->statusCode() . "\n";
+    // print_r($response->headers());
+    // print $response->body() . "\n";
 
     
 } catch (Exception $e) {
-    $response = array('status' => 'Internal Error', 'message' => 'Caught exception: '. $e->getMessage() ."\n");
-            print $response;
+    // $response = array('status' => 'Internal Error', 'message' => 'Caught exception: '. $e->getMessage() ."\n");
+         print $e;
 
 }
 }else{
     $response = array('status'=> 'error', 'message' => 'User does not exist on Our servers');
-            print $response;
+     print $response;
 
 }
 }else{
     $response = array('status' => 'error', 'message' => 'Invalid Request');
-            print $response;
+            // print $response;
 
 }
 }

@@ -2,7 +2,7 @@
 
 function ReviewerAccountEmail($RecipientEmail){
 
-require '../vendor/autoload.php'; // If you're using Composer (recommended)
+require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
 // Comment out the above line if not using Composer
 // require("<PATH TO>/sendgrid-php.php");
 // If not using Composer, uncomment the above line and
@@ -50,18 +50,18 @@ try {
         $response = $sendgrid->send($email);
     
         $response = array('status' => 'success', 'message' => 'Email sent', 'email' => $encryptedButton);
-        print $response;
+        // print $response;
 
     
 } catch (Exception $e) {
     $response = array('status' => 'Internal Error', 'message' => 'Caught exception: '. $e->getMessage() ."\n");
-            print $response;
+            // print $response;
 
 }
 
 }else{
     $response = array('status' => 'error', 'message' => 'Invalid Request');
-            print $response;
+            // print $response;
 
 }
 }

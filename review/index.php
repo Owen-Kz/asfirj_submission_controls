@@ -94,6 +94,9 @@ $reviewStatus = $_POST["review_status"];
 if(isset($Article_id) && isset($Review_Id)){
     // Check if the reveiw Already Exists
     $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `article_id` = ? AND `reviewer_email`) = ?");
+    if(!$stmt){
+        echo $con->error;
+    }
     $stmt->bind_param("ss", $Article_id, $reviewerEmail);
     $stmt->execute();
     $result = $stmt->get_result();

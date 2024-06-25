@@ -93,7 +93,7 @@ $reviewStatus = $_POST["review_status"];
 
 if(isset($Article_id) && isset($Review_Id)){
     // Check if the reveiw Already Exists
-    $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `article_id` = ? AND `reviewer_email`) = ?");
+    $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `article_id` = ? AND `reviewer_email` = ?");
     if(!$stmt){
         echo $con->error;
     }
@@ -103,7 +103,7 @@ if(isset($Article_id) && isset($Review_Id)){
     $count = mysqli_num_rows($result);
     if($count>0){
         // "Update the Exisiting REview instread"
-        $stmt = $con->prepare("UPDATE `reviews` SET `one_paragraph_comment`=?,`one_paragraph_file`=?,`general_comment`=?,`general_comment_file`=?,`specific_comment`=?,`specific_comment_file`=?,`accurately_reflect_manuscript_subject_score`=?,`clearly_summarize_content_score`=?,`presents_what_is_known_score`=?,`gives_accurate_summary_score`=?,`purpose_clear_score`=?,`method_section_clear_score`=?,`study_materials_clearly_described_score`=?,`research_method_valid_score`=?,`ethical_standards_score`=?,`study_find_clearly_described_score`=?,`result_presented_logical_score`=?,`graphics_complement_result_score`=?,`table_follow_specified_standards_score`=?,`tables_add_value_or_distract_score`=?,`issues_with_title_score`=?,`manuscript_present_summary_of_key_findings_score`=?,`manuscript_highlight_strength_of_study_score`=?,`manuscript_compare_findings_score`=?,`manuscript_discuss_meaning_score`='[value-29]',`manuscript_describes_overall_story_score`='[value-30]',`conclusions_reflect_achievement_score`='?,`manuscript_describe_gaps_score`=?,`referencing_accurate_score`=?,`novelty_score`='[value-34]',`quality_score`='[value-35]',`scientific_accuracy_score`='[value-36]',`overall_merit_score`='[value-37]',`english_level_score`='[value-38]',`overall_recommendation`='?,`letter_to_editor`=?,`review_status`=?,`date_created`='[value-42]' WHERE `article_id` = ? AND md5(`reviewer_email`) = ?");
+        $stmt = $con->prepare("UPDATE `reviews` SET `one_paragraph_comment`=?,`one_paragraph_file`=?,`general_comment`=?,`general_comment_file`=?,`specific_comment`=?,`specific_comment_file`=?,`accurately_reflect_manuscript_subject_score`=?,`clearly_summarize_content_score`=?,`presents_what_is_known_score`=?,`gives_accurate_summary_score`=?,`purpose_clear_score`=?,`method_section_clear_score`=?,`study_materials_clearly_described_score`=?,`research_method_valid_score`=?,`ethical_standards_score`=?,`study_find_clearly_described_score`=?,`result_presented_logical_score`=?,`graphics_complement_result_score`=?,`table_follow_specified_standards_score`=?,`tables_add_value_or_distract_score`=?,`issues_with_title_score`=?,`manuscript_present_summary_of_key_findings_score`=?,`manuscript_highlight_strength_of_study_score`=?,`manuscript_compare_findings_score`=?,`manuscript_discuss_meaning_score`=?,`manuscript_describes_overall_story_score`=?,`conclusions_reflect_achievement_score`='?,`manuscript_describe_gaps_score`=?,`referencing_accurate_score`=?,`novelty_score`=?,`quality_score`=?,`scientific_accuracy_score`=?,`overall_merit_score`=?,`english_level_score`=?,`overall_recommendation`=?,`letter_to_editor`=?,`review_status`=?,`date_created`=? WHERE `article_id` = ? AND `reviewer_email` = ?");
         $stmt->bind_param("sssssssssssssssssssssssssssssssssssssss",  $one_paragraph_comment,
         $one_paragraph_file,
         $general_comment,

@@ -10,6 +10,9 @@ $email = $_GET["e"];
 
 
 $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`email`) = ?");
+if(!$stmt){
+    echo $stmt->error;
+}
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();

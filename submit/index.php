@@ -136,7 +136,7 @@ if(isset($title)){
     
 
     // Send files to Node.js server
-    $url = $_ENV["NODE_END"].'external/api/combinePDF'; // Replace with your Node.js server URL
+    $url = "https://asfischolar.org/".'external/api/combinePDF'; // Replace with your Node.js server URL
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);

@@ -5,7 +5,9 @@ include "../db.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-$email = $data["email"];
+// $email = $data["email"];
+$email = $_GET["e"];
+
 
 $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`email`) = ?");
 $stmt->bind_param("s", $email);

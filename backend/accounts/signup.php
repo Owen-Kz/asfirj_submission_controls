@@ -48,7 +48,7 @@ if(isset($email) && isset($password)){
 
                 SendWelcomeEmail($email);
 
-                $response = array("status"=>"success", "message"=>"Account Created Successfully, Please verify your email $email");
+                $response = array("status"=>"success", "message"=>"Account Created Successfully, A verification email has been sent to $email");
                 echo json_encode($response);
             }else{
                 $response = array("status"=>"error", "message"=>"Could Not Create Account");

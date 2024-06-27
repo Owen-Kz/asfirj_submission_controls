@@ -65,6 +65,33 @@ if(isset($title)){
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // For Logged in Author
+        $LoggedInauthorsPrefix = $_POST["loggedIn_authors_prefix"];
+        $LoggedInauthors_firstname = $_POST["loggedIn_authors_first_name"];
+        $LoggedInauthors_lastname = $_POST["loggedIn_authors_last_name"];
+        $LoggedInauthors_other_name = $_POST["loggedIn_authors_other_name"];
+        $LoggedInaffiliation = $_POST["loggedIn_affiliation"];
+        $LoggedInaffiliation_country = $_POST["loggedIn_affiliation_country"];
+        $LoggedInaffiliation_city = $_POST["loggedIn_affiliation_city"];
+        $LoggedInauthorEmail = $_POST["loggedIn_author"];
+
+        $LoggedInauthorsFullname = "$LoggedInauthorsPrefix $LoggedInauthors_firstname $LoggedInauthors_lastname $LoggedInauthors_other_name";
+        try {
+            $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?, ?, ?, ?, ?)");
+            if (!$stmt) {
+                throw new Exception("Failed to prepare statement: " . $con->error);
+            }
+            $stmt->bind_param("ssssss", $articleID, $LoggedInauthorsFullname, $LoggedInauthorEmail, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to execute statement Author: " . $stmt->error);
+            }
+        } catch (Exception $e) {
+            $response = array('status'=> 'error', 'message' => 'ErrorAuthor:'  . $e->getMessage());
+            echo json_encode($response);
+            exit;
+        }
+
+        // For other Authors 
         $authorsPrefix = $_POST["authors_prefix"];
         $authors_firstname = $_POST["authors_first_name"];
         $authors_lastname = $_POST["authors_last_name"];

@@ -136,21 +136,25 @@ if(isset($title)){
     
 
     // Send files to Node.js server
-    $url = "http://asfischolar.org/".'external/api/combinePDF'; // Replace with your Node.js server URL
+    $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-    $response = curl_exec($ch);
-    if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
-        exit;
-    }
-    curl_close($ch);
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem'); // Path to cacert.pem file
 
+
+$response = curl_exec($ch);
+if (curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+    exit;
+}
+curl_close($ch);
+
+if ($response) {
     $responseDecoded = json_decode($response, true);
     if ($responseDecoded['success']) {
         $combinedFilename = $responseDecoded['filename'];
@@ -172,6 +176,7 @@ if(isset($title)){
             $response = array("status"=>"error", "message"=>"Error moving combined PDF to designated folder");
             echo json_encode($response);
         }
+    }
     } else {
         $response = array("status"=>"error", "message"=>"Error combining PDFs");
         echo json_encode($response);

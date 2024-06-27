@@ -3,7 +3,7 @@
 include "../cors.php";
 include "../db.php";
 
-$data = json_decode(file_get_contents("php://input"), true);
+// $data = json_decode(file_get_contents("php://input"), true);
 
 // $email = $data["email"];
 $email = $_GET["e"];
@@ -24,7 +24,10 @@ if(mysqli_num_rows($result) > 0){
         echo json_encode($response);
     }
     else{
-        $stmt = $con->prepare("UPDATE `authors_account` SET `account_status` = 'verified' WHERE md5(`email`) = >");
+        $stmt = $con->prepare("UPDATE `authors_account` SET `account_status` = 'verified' WHERE md5(`email`) = ?");
+        if(!$stmt){
+            echo $stmt->error;
+        }
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $response = array("status" => "success", "message" => "Account Verified Succesfully");

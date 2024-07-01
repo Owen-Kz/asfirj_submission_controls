@@ -26,6 +26,7 @@ rename("../uploadedFiles/". $_FILES[$outputFile]["name"], "../uploadedFiles/".$n
 }
 $title = $_POST["manuscript_full_title"];
 $type = $_POST["article_type"];
+$discipline = $_POST["discipline"];
 $manuscript_file = $_FILES["manuscript_file"];
 $figures = $_FILES["figures"];
 $supplementary_material = $_FILES["supplementary_materials"];
@@ -165,8 +166,8 @@ if ($response) {
 
         if ($combinedFilename) {
             // Finally UploadDocuments after file has been combined
-            $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `title`, `manuscript_file`,`cover_letter_file`, `abstract`, `corresponding_authors_email`, `article_id`) VALUES(?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssssss", $type, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID);
+            $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`,`cover_letter_file`, `abstract`, `corresponding_authors_email`, `article_id`) VALUES(?, ?, ?, ?, ?, ?, ?,?)");
+            $stmt->bind_param("ssssssws", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID);
             if($stmt->execute()){
                 $response = array("status"=>"success", "message"=>"Submission Successful");
                 echo json_encode($response);

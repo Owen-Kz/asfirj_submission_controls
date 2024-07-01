@@ -9,7 +9,7 @@ $useremail = $data["user"];
 
 if($useremail){
     // Check if the user has any submissions under thier email 
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE md5(`corresponding_authors_email`) = ?");
+    $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE md5(`authors_email`) = ? ");
     if(!$stmt){
         echo json_encode(array("error" => $stmt->error));
     }
@@ -22,9 +22,10 @@ if($useremail){
         $articles = array();
 
         while($row = $result->fetch_assoc()){
-        
+     
+     
+            // $ArticlesRow = $result->fetch_assoc();
                 $articles[] = $row;
-            
         }
         $response = array("success" => "Articles List", "articles" => $articles);
         echo json_encode($response);

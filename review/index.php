@@ -2,6 +2,19 @@
 include "../backend/cors.php";
 include "../backend/db.php";
 
+function UpdateSubmissionsTable($article_id, $reviewStatus){
+    include "../backend/db.php";
+    $stmt = $con->prepare("UPDATE `submissions` SET `status` = ? WHERE `article_id` = ?");
+    if(!!$stmt){
+        print_r($stmt->error);
+    }
+    $stmt->bind_param("ss", $reviewStatus, $article_id);
+    if($stmt->execute()){
+        print_r("Submission Updated Successfully");
+    }else{
+        print_r("Could Not Execite Statement");
+    }
+}
 function MoveFile($outputFile, $designatedDirectory, $newFilename){
     // Move the final merged PDF to the designated folder
 $manuscriptFile = basename($_FILES[$outputFile]["name"]);
@@ -148,12 +161,19 @@ if(isset($Article_id) && isset($Review_Id)){
         $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = ? WHERE `article_id` =? AND md5(`reviewer_email`) = ?");
         $stmt->bind_param("sss", $reviewStatus, $Article_id,$Reviewed_by);
         $stmt->execute();
+        if($reviewStatus === "review_submitted"){
+          UpdateSubmissionsTable($Article_id, $reviewStatus);
+        }
         $response = array("status" => "success", "message" => "Review Updated successfully");
         echo json_encode($response);
         }else{
+                  // update the submission status in the table 
+  
+
         $response = array("status" => "error", "message" => $stmt->error);
         echo json_encode($response);
         }
+  
     }else{
         // If this is the firsttime the review qa initiated
     // Add the Review to the database 
@@ -201,9 +221,13 @@ if(isset($Article_id) && isset($Review_Id)){
 );
 
     if($stmt->execute()){
-        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = 'review_submitted' WHERE `article_id` =?");
-        $stmt->bind_param("s", $Article_id);
+        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = ? WHERE `article_id` =?");
+        $stmt->bind_param("ss", $reviewStatus, $Article_id);
         $stmt->execute();
+            // update the submission status in the table 
+            if($reviewStatus === "review_submitted"){
+               UpdateSubmissionsTable($Article_id, $reviewStatus);
+            }
     $response = array("status" => "success", "message" => "Review Submitted successfully");
     echo json_encode($response);
     }else{

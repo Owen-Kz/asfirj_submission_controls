@@ -6,7 +6,7 @@ include "../db.php";
 $submission_id  = $_GET["a_id"];
 
 if(isset($_GET["a_id"])){
-    $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `article_id` = ?");
+    $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `review_id` = ?");
     $stmt->bind_param("s", $submission_id);
     $stmt->execute();
     $result = $stmt->get_result();

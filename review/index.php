@@ -6,13 +6,13 @@ function UpdateSubmissionsTable($article_id, $reviewStatus){
     include "../backend/db.php";
     $stmt = $con->prepare("UPDATE `submissions` SET `status` = ? WHERE `article_id` = ?");
     if(!!$stmt){
-        print_r($stmt->error);
+        // print_r($stmt->error);
     }
     $stmt->bind_param("ss", $reviewStatus, $article_id);
     if($stmt->execute()){
-        print_r("Submission Updated Successfully");
+        // print_r("Submission Updated Successfully");
     }else{
-        print_r("Could Not Execite Statement");
+        // print_r("Could Not Execite Statement");
     }
 }
 function MoveFile($outputFile, $designatedDirectory, $newFilename){

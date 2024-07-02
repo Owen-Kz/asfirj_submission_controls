@@ -93,6 +93,7 @@ if(isset($title)){
         }
 
         // For other Authors 
+        if(isset($_POST["authors_prefix"])){
         $authorsPrefix = $_POST["authors_prefix"];
         $authors_firstname = $_POST["authors_first_name"];
         $authors_lastname = $_POST["authors_last_name"];
@@ -119,6 +120,7 @@ if(isset($title)){
                 exit;
             }
         }
+    }
     }
 
     // Prepare files for sending to Node.js server
@@ -167,7 +169,7 @@ if ($response) {
         if ($combinedFilename) {
             // Finally UploadDocuments after file has been combined
             $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`,`cover_letter_file`, `abstract`, `corresponding_authors_email`, `article_id`) VALUES(?, ?, ?, ?, ?, ?, ?,?)");
-            $stmt->bind_param("ssssssws", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID);
+            $stmt->bind_param("ssssssss", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID);
             if($stmt->execute()){
                 $response = array("status"=>"success", "message"=>"Submission Successful");
                 echo json_encode($response);

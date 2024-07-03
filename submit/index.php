@@ -127,19 +127,25 @@ if(isset($title)){
     $fields = array(
         'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
     );
-
+    if(isset($figures['tmp_name'])){
         $fields["figures"] = new CURLFile($figures['tmp_name'], $figures['type'], $figures['name']);
+    }
     
+    if(isset($supplementary_material['tmp_name'])){
 
     $fields['supplementary_material'] = new CURLFile($supplementary_material['tmp_name'], $supplementary_material['type'], $supplementary_material['name']);
+}
+
+if(isset($graphic_abstract['tmp_name'])){
     $fields['graphic_abstract'] = new CURLFile($graphic_abstract['tmp_name'], $graphic_abstract['type'], $graphic_abstract['name']);
+}
 
-
+if(isset($tables['tmp_name'])){
         $fields["tables"] = new CURLFile($tables['tmp_name'], $tables['type'], $tables['name']);
-    
+}
 
     // Send files to Node.js server
-    $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL
+    $url = "http://67.223.117.3:34000/external/api/combinePDF"; // Replace with your Node.js server URL
 
 
 $ch = curl_init();

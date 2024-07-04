@@ -6,7 +6,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 if(isset($data["id"])){
     $articleId = $data["id"];
     // find all the article data realated to the author 
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ?");
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `revision_id` = ?");
     $stmt->bind_param("s", $articleId);
     if(!$stmt){
         echo json_encode(array("error" => $stmt->error));

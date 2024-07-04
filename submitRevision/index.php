@@ -32,6 +32,7 @@ $figures = $_FILES["figures"];
 $supplementary_material = $_FILES["supplementary_materials"];
 $graphic_abstract = $_FILES["graphic_abstract"];
 $tables = $_FILES["tables"];
+$manuscriptId = $_POST["manuscript_id"];
 
 $cover_letter = $_FILES["cover_letter"];
 $cover_letter_file = "";
@@ -46,11 +47,11 @@ if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isse
 $abstract = $_POST["abstract"];
 $corresponding_author = $_POST["corresponding_author"];
 $Buffer = bin2hex(random_bytes(7));
-$articleID = "ASFIRJ_" . date("Y") . "_" . bin2hex(random_bytes(7));
+$articleID = $manuscriptId;
 
 if(isset($title)){
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ? AND `status` != 'returned_for_revision'");
-    $stmt->bind_param("s", $title);
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `status` = 'returned_for_revision' AND `corresponding_authors_email` = ?");
+    $stmt->bind_param("ss", $articleID, $corresponding_author);
     if(!$stmt){
         $response = array("status"=>"error", "message" => $con->error);
         echo json_encode($response);
@@ -60,10 +61,11 @@ if(isset($title)){
     $result = $stmt->get_result();
     $count = mysqli_num_rows($result);
     if($count > 0){
-        $response = array("status"=>"error", "message" => "A submission already exists with this title");
-        echo json_encode($response);
-        exit;
-    }
+        $row = $result->fetch_assoc();
+        $revisionsCount = $row["revisions_count"];
+        $newRevisionsCount = (int) $revisionsCount + 1;
+
+        $RevisionsId = $articleID.".R".$newRevisionsCount;
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // For Logged in Author
@@ -176,9 +178,16 @@ if ($response) {
 
         if ($combinedFilename) {
             // Finally UploadDocuments after file has been combined
-            $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`,`cover_letter_file`, `abstract`, `corresponding_authors_email`, `article_id`, `revision_id`) VALUES(?, ?, ?, ?, ?, ?, ?,?,?)");
-            $stmt->bind_param("sssssssss", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $articleID);
+            $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`,`revision_id`,`revisions_count`, `discipline`, `title`, `manuscript_file`,`cover_letter_file`, `abstract`, `corresponding_authors_email`, `article_id`) VALUES(?,?,?, ?, ?, ?, ?, ?, ?,?)");
+            $stmt->bind_param("ssisssssss", $type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID);
             if($stmt->execute()){
+                // UPdaet the Status 
+                $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'revision_submitted' WHERE `article_id` = ?");
+                if(!$stmt){
+                    echo json_encode(array("status" => "error", "message" => $stmt->error));
+                }
+                $stmt->bind_param("s", $articleID);
+                $stmt->execute();
                 $response = array("status"=>"success", "message"=>"Submission Successful");
                 echo json_encode($response);
             } else {
@@ -194,6 +203,12 @@ if ($response) {
         $response = array("status"=>"error", "message"=>"Error combining PDFs");
         echo json_encode($response);
     }
+
+}else{
+    $response = array("status"=>"error", "message" => "This Submission Does not Exist Or has not been returned for Review");
+    echo json_encode($response);
+    exit;
+}
 } else {
     $response = array("status"=>"error", "message"=>"Incomplete Fields");
     echo json_encode($response);

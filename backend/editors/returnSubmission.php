@@ -21,7 +21,7 @@ if(isset($editor)){
     $result = $stmt->get_result();
 
     if(mysqli_num_rows($result) > 0){
-        $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'returned' WHERE `article_id` = ?");        
+        $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'returned' WHERE `revision_id` = ?");        
         $stmt->bind_param("s", $article_id);
         if($stmt->execute()){
         $response = array("status" => "sucess", "message"=>"Article has been accepted");

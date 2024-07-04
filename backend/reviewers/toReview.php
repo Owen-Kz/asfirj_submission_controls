@@ -18,7 +18,7 @@ if(mysqli_num_rows($result) > 0){
 
     while ($row = $result->fetch_assoc()) {
         $submissionId = $row["article_id"];
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` =?");
+        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `revision_id` =?");
         $stmt->bind_param("s", $submissionId);
         $stmt->execute();
         $result = $stmt->get_result();

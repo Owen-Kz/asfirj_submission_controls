@@ -27,7 +27,7 @@ if(isset($editor)){
         $row = mysqli_fetch_array($result);
         $editor_email = $row["email"];
 
-        $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'submitted_for_review' WHERE `article_id` = ?");        
+        $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'submitted_for_review' WHERE `revision_id` = ?");        
         $stmt->bind_param("s", $article_id);
         if($stmt->execute()){
         $response = array("status" => "sucess", "message"=>"Review Process Initiated");
@@ -37,7 +37,7 @@ if(isset($editor)){
         ReviewerAccountEmail($reviewerEmail);
 
         // Create the review process entry 
-        $stmt = $con->prepare("INSERT INTO `submitted_for_review` (`article_id`, `reviewer_email`, `submitted_by`) VALUES (?,?,?,?)");
+        $stmt = $con->prepare("INSERT INTO `submitted_for_review` (`revision_id`, `reviewer_email`, `submitted_by`) VALUES (?,?,?,?)");
         $stmt->bind_param($article_id, $reviewerEmail, $editor_email);
         $stmt->execute();
         }else{

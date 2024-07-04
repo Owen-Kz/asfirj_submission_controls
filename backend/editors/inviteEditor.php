@@ -46,7 +46,7 @@ if (isset($editor)) {
                 $stmt->bind_param("ssss", $InvitedEditorEmail, $article_id, $linkExpirationDate, $invitedEditorName);
                 if ($stmt->execute()) {
 
-                    $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'submitted_for_edit' WHERE `article_id` = ?");
+                    $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'submitted_for_edit' WHERE `revision_id` = ?");
                     $stmt->bind_param("s", $article_id);
                     if ($stmt->execute()) {
                         $response = array("status" => "success", "message" => "Review Process Initiated");
@@ -56,7 +56,7 @@ if (isset($editor)) {
                         EditorAccountEmail($editor_email, $acceptInvitationLink, $rejectInvitationLink);
 
                         // Create the review process entry 
-                        $stmt = $con->prepare("INSERT INTO `submitted_for_edit` (`article_id`, `reviewer_email`, `submitted_by`) VALUES (?,?,?)");
+                        $stmt = $con->prepare("INSERT INTO `submitted_for_edit` (`revision_id`, `reviewer_email`, `submitted_by`) VALUES (?,?,?)");
                         $stmt->bind_param("sss",$article_id, $reviewerEmail, $editor_email, );
                         $stmt->execute();
 

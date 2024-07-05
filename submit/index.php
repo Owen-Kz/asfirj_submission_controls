@@ -2,25 +2,26 @@
 include "../backend/cors.php";
 include "../backend/db.php";
 include "../backend/checkifAuthorExists.php";
-
+include "../backend/updateSubmission.php";
 session_start();
-function MoveFile($outputFile, $designatedDirectory, $newFilename){
+function MoveFile($outputFile, $designatedDirectory, $newFilename)
+{
     // Move the final merged PDF to the designated folder
-$manuscriptFile = basename($_FILES[$outputFile]["name"]);
-$targetFile = "../uploadedFiles/". $manuscriptFile;
-if (!is_writable("../uploadedFiles/")) {
-    die("Target directory is not writable.");
-}
-if (!file_exists("../uploadedFiles/")) {
-    mkdir("../uploadedFiles/", 0777, true);
-}
-if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {
-// move_uploaded_file($outputFile["tmp_name"], $targetFile);
-rename("../uploadedFiles/". $_FILES[$outputFile]["name"], "../uploadedFiles/".$newFilename);
-// print_r("File Uploaded");
-}else{
-   echo "Could Not Upload File ".json_encode($_FILES[$outputFile]);
-}
+    $manuscriptFile = basename($_FILES[$outputFile]["name"]);
+    $targetFile = "../uploadedFiles/" . $manuscriptFile;
+    if (!is_writable("../uploadedFiles/")) {
+        die("Target directory is not writable.");
+    }
+    if (!file_exists("../uploadedFiles/")) {
+        mkdir("../uploadedFiles/", 0777, true);
+    }
+    if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {
+        // move_uploaded_file($outputFile["tmp_name"], $targetFile);
+        rename("../uploadedFiles/" . $_FILES[$outputFile]["name"], "../uploadedFiles/" . $newFilename);
+        // print_r("File Uploaded");
+    } else {
+        echo "Could Not Upload File " . json_encode($_FILES[$outputFile]);
+    }
 
 
 }
@@ -32,38 +33,75 @@ $figures = $_FILES["figures"];
 $supplementary_material = $_FILES["supplementary_materials"];
 $graphic_abstract = $_FILES["graphic_abstract"];
 $tables = $_FILES["tables"];
+$submissionStatus = $_POST["review_status"];
 
 $cover_letter = $_FILES["cover_letter"];
 $cover_letter_file = "";
+$manuscriptFileName = "";
+$tablesFileName = "";
+$figuresFileName = "";
+$supplementaryMaterialsFileName = "";
+$graphicAbstractFileName = "";
 $cover_letter_file_main = $_FILES["cover_letter"];
 
-if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
-    $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+if (isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])) {
+    $cover_letter_file = "coverLetter" . time() . '-' . basename($cover_letter_file_main["name"]);
 
-    MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
+    MoveFile("cover_letter", __DIR__ . "/uploadedFiles", $cover_letter_file);
 }
 
 $abstract = $_POST["abstract"];
 $corresponding_author = $_POST["corresponding_author"];
 $Buffer = bin2hex(random_bytes(7));
-$articleID = "ASFIRJ_" . date("Y") . "_" . bin2hex(random_bytes(7));
+$submissionsCount = "";
 
-if(isset($title)){
+if (isset($title)) {
     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ? AND `status` != 'returned_for_revision'");
     $stmt->bind_param("s", $title);
-    if(!$stmt){
-        $response = array("status"=>"error", "message" => $con->error);
+    if (!$stmt) {
+        $response = array("status" => "error", "message" => $con->error);
         echo json_encode($response);
         exit;
     }
     $stmt->execute();
     $result = $stmt->get_result();
     $count = mysqli_num_rows($result);
-    if($count > 0){
-        $response = array("status"=>"error", "message" => "A submission already exists with this title");
+    if ($count > 0) {
+        $response = array("status" => "error", "message" => "A submission already exists with this title");
         echo json_encode($response);
         exit;
     }
+    // Select Count to add to ID 
+    $stmt = $con->prepare("SELECT COUNT(*) AS `totalSubmissions` FROM `submissions` WHERE 1");
+    if (!$stmt) {
+        $response = array("status" => "error", "message" => $con->error);
+        echo json_encode($response);
+        exit;
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+    // $count = mysqli_num_rows($result);
+// if($count > 0){
+    $row = $result->fetch_assoc();
+    $countSub = $row["totalSubmissions"] + 1;
+    if ($countSub < 10) {
+        $submissionsCount = "0000" . $row["totalSubmissions"] + 1;
+    } else if ($countSub > 10 && $countSub < 100) {
+        $submissionsCount = "000" . $row["totalSubmissions"] + 1;
+    } else if ($countSub > 100 && $countSub < 1000) {
+        $submissionsCount = "00" . $row["totalSubmissions"] + 1;
+    } else if ($countSub > 1000 && $countSub < 10000) {
+        $submissionsCount = "0" . $row["totalSubmissions"] + 1;
+    } else {
+        $submissionsCount = $row["totalSubmissions"] + 1;
+
+    }
+
+    // }
+    $articleID = "ASFIRJ-" . date("Y") . "-" . $submissionsCount;
+
+    // End Select Count 
+
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // For Logged in Author
@@ -76,126 +114,189 @@ if(isset($title)){
         $LoggedInaffiliation_city = $_POST["loggedIn_affiliation_city"];
         $LoggedInauthorEmail = $_POST["loggedIn_author"];
 
+        $loggedIn_authors_ORCID = $_POST["loggedIn_authors_ORCID"];
+
         $LoggedInauthorsFullname = "$LoggedInauthorsPrefix $LoggedInauthors_firstname $LoggedInauthors_lastname $LoggedInauthors_other_name";
         try {
-            $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?, ?, ?, ?, ?)");
+            // Frist Check the the Author Exists 
+            $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ? AND `submission_id` = ?");
             if (!$stmt) {
                 throw new Exception("Failed to prepare statement: " . $con->error);
+
             }
-            $stmt->bind_param("ssssss", $articleID, $LoggedInauthorsFullname, $LoggedInauthorEmail, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
-            if (!$stmt->execute()) {
-                throw new Exception("Failed to execute statement Author: " . $stmt->error);
+            $stmt->bind_param("ss", $LoggedInauthorEmail, $articleID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result->num_rows > 0) {
+
+            } else {
+                $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`, `orcid_id`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?,?, ?, ?, ?, ?)");
+                if (!$stmt) {
+                    throw new Exception("Failed to prepare statement: " . $con->error);
+                }
+                $stmt->bind_param("sssssss", $articleID, $LoggedInauthorsFullname, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
+                if (!$stmt->execute()) {
+                    throw new Exception("Failed to execute statement Author: " . $stmt->error);
+                }
             }
         } catch (Exception $e) {
-            $response = array('status'=> 'error', 'message' => 'ErrorAuthor:'  . $e->getMessage());
+            $response = array('status' => 'error', 'message' => 'ErrorAuthor:' . $e->getMessage());
             echo json_encode($response);
             exit;
         }
 
         // For other Authors 
-        if(isset($_POST["authors_prefix"])){
-        $authorsPrefix = $_POST["authors_prefix"];
-        $authors_firstname = $_POST["authors_first_name"];
-        $authors_lastname = $_POST["authors_last_name"];
-        $authors_other_name = $_POST["authors_other_name"];
-        $affiliation = $_POST["affiliation"];
-        $affiliation_country = $_POST["affiliation_country"];
-        $affiliation_city = $_POST["affiliation_city"];
-        $authorEmail = $_POST["email"];
+        if (isset($_POST["authors_prefix"])) {
+            $authorsPrefix = $_POST["authors_prefix"];
+            $authors_firstname = $_POST["authors_first_name"];
+            $authors_lastname = $_POST["authors_last_name"];
+            $authors_other_name = $_POST["authors_other_name"];
+            $affiliation = $_POST["affiliation"];
+            $affiliation_country = $_POST["affiliation_country"];
+            $affiliation_city = $_POST["affiliation_city"];
+            $authorEmail = $_POST["email"];
+            $authors_orcid = $_POST["authors_orcid"];
 
-        for ($i = 0; $i < count($authorEmail); $i++){
-            $authorsFullname = "$authorsPrefix[$i] $authors_firstname[$i] $authors_lastname[$i] $authors_other_name[$i]";
-            try {
-                $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?, ?, ?, ?, ?)");
-                if (!$stmt) {
-                    throw new Exception("Failed to prepare statement: " . $con->error);
+            for ($i = 0; $i < count($authorEmail); $i++) {
+                $authorsFullname = "$authorsPrefix[$i] $authors_firstname[$i] $authors_lastname[$i] $authors_other_name[$i]";
+                try {
+                    // Frist Check the the Author Exists 
+                    $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ? AND `submission_id` = ?");
+                    if (!$stmt) {
+                        throw new Exception("Failed to prepare statement: " . $con->error);
+
+                    }
+                    $stmt->bind_param("ss", $authorEmail[$i], $articleID);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    if ($result->num_rows > 0) {
+
+                    } else {
+                        $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`,`orcid_id`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?, ?, ?, ?, ?,?)");
+                        if (!$stmt) {
+                            throw new Exception("Failed to prepare statement: " . $con->error);
+                        }
+                        $stmt->bind_param("sssssss", $articleID, $authorsFullname, $authorEmail[$i], $authors_orcid[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i]);
+                        if (!$stmt->execute()) {
+                            throw new Exception("Failed to execute statement Author: " . $stmt->error);
+                        }
+                    }
+                } catch (Exception $e) {
+                    $response = array('status' => 'error', 'message' => 'ErrorAuthor:' . $e->getMessage());
+                    echo json_encode($response);
+                    exit;
                 }
-                $stmt->bind_param("ssssss", $articleID, $authorsFullname, $authorEmail[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i]);
-                if (!$stmt->execute()) {
-                    throw new Exception("Failed to execute statement Author: " . $stmt->error);
-                }
-            } catch (Exception $e) {
-                $response = array('status'=> 'error', 'message' => 'ErrorAuthor:'  . $e->getMessage());
-                echo json_encode($response);
-                exit;
             }
         }
-    }
     }
 
     // Prepare files for sending to Node.js server
-    $fields = array(
-        'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
-    );
-    if(isset($figures['tmp_name'])){
-        $fields["figures"] = new CURLFile($figures['tmp_name'], $figures['type'], $figures['name']);
-    }
-    
-    if(isset($supplementary_material['tmp_name'])){
+    if ($submissionStatus === "saved_for_later") {
+        // Logic For file upload should go here 
+        if (isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])) {
+            $cover_letter_file = "coverLetter" . time() . '-' . basename($cover_letter_file_main["name"]);
 
-    $fields['supplementary_material'] = new CURLFile($supplementary_material['tmp_name'], $supplementary_material['type'], $supplementary_material['name']);
-}
+            MoveFile("cover_letter", __DIR__ . "/uploadedFiles", $cover_letter_file);
+        }
+        $tables = $_FILES["tables"];
+        if (isset($manuscript_file) && $manuscript_file["size"] > 0 && isset($_FILES["manuscript_file"]["tmp_name"])) {
+            $combinedFilename = "manuscriptFile" . time() . '-' . basename($manuscript_file["name"]);
 
-if(isset($graphic_abstract['tmp_name'])){
-    $fields['graphic_abstract'] = new CURLFile($graphic_abstract['tmp_name'], $graphic_abstract['type'], $graphic_abstract['name']);
-}
+            MoveFile("manuscript_file", __DIR__ . "/uploadedFiles", $combinedFilename);
+        }
+        if (isset($figures) && $figures["size"] > 0 && isset($_FILES["figures"]["tmp_name"])) {
+            $figuresFileName = "figures" . time() . '-' . basename($figures["name"]);
 
-if(isset($tables['tmp_name'])){
-        $fields["tables"] = new CURLFile($tables['tmp_name'], $tables['type'], $tables['name']);
-}
+            MoveFile("figures", __DIR__ . "/uploadedFiles", $figuresFileName);
+        }
+        if (isset($supplementary_material) && $supplementary_material["size"] > 0 && isset($_FILES["supplementary_materials"]["tmp_name"])) {
+            $supplementaryMaterialsFileName = "supplementaryMaterial" . time() . '-' . basename($supplementary_material["name"]);
 
-    // Send files to Node.js server
-    $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL
+            MoveFile("supplementary_materials", __DIR__ . "/uploadedFiles", $supplementaryMaterialsFileName);
+        }
+        if (isset($graphic_abstract) && $graphic_abstract["size"] > 0 && isset($_FILES["graphic_abstract"]["tmp_name"])) {
+            $graphicAbstractFileName = "graphicAbstract" . time() . '-' . basename($graphic_abstract["name"]);
+
+            MoveFile("graphic_abstract", __DIR__ . "/uploadedFiles", $graphicAbstractFileName);
+        }
+        if (isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"])) {
+            $tablesFileName = "tables" . time() . '-' . basename($figures["name"]);
+
+            MoveFile("tables", __DIR__ . "/uploadedFiles", $tablesFileName);
+        }
 
 
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $url);
-curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-// curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // then update or insert the file into the database 
+        UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName);
+
+
+    } else {
+        $fields = array(
+            'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
+        );
+        if (isset($figures['tmp_name'])) {
+            $fields["figures"] = new CURLFile($figures['tmp_name'], $figures['type'], $figures['name']);
+        }
+
+        if (isset($supplementary_material['tmp_name'])) {
+
+            $fields['supplementary_material'] = new CURLFile($supplementary_material['tmp_name'], $supplementary_material['type'], $supplementary_material['name']);
+        }
+
+        if (isset($graphic_abstract['tmp_name'])) {
+            $fields['graphic_abstract'] = new CURLFile($graphic_abstract['tmp_name'], $graphic_abstract['type'], $graphic_abstract['name']);
+        }
+
+        if (isset($tables['tmp_name'])) {
+            $fields["tables"] = new CURLFile($tables['tmp_name'], $tables['type'], $tables['name']);
+        }
+
+        // Send files to Node.js server
+        $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL
+
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 // curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem'); // Path to cacert.pem file 
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification (insecure)
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification (insecure)
 
 
-$response = curl_exec($ch);
-if (curl_errno($ch)) {
-    // echo 'Error:' . curl_error($ch);
-    $response = array("status"=>"error", "message"=>'Error:' . curl_error($ch));
-    echo json_encode($response);
-    exit;
-}
-curl_close($ch);
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            // echo 'Error:' . curl_error($ch);
+            $response = array("status" => "error", "message" => 'Error:' . curl_error($ch));
+            echo json_encode($response);
+            exit;
+        }
+        curl_close($ch);
 
-if ($response) {
-    $responseDecoded = json_decode($response, true);
-    if ($responseDecoded['success']) {
-        $combinedFilename = $responseDecoded['filename'];
-        $combinedFilePath = 'uploads/' . $combinedFilename;
+        if ($response) {
+            $responseDecoded = json_decode($response, true);
+            if ($responseDecoded['success']) {
+                $combinedFilename = $responseDecoded['filename'];
+                $combinedFilePath = 'uploads/' . $combinedFilename;
 
 
-        if ($combinedFilename) {
-            // Finally UploadDocuments after file has been combined
-            $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`,`cover_letter_file`, `abstract`, `corresponding_authors_email`, `article_id`, `revision_id`) VALUES(?, ?, ?, ?, ?, ?, ?,?,?)");
-            $stmt->bind_param("sssssssss", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $articleID);
-            if($stmt->execute()){
-                $response = array("status"=>"success", "message"=>"Submission Successful");
-                echo json_encode($response);
-            } else {
-                $response = array("status"=>"error", "message"=>"Could Not Complete Submission");
-                echo json_encode($response);
+                if ($combinedFilename) {
+                    // then update or insert the file into the database 
+                    UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName);
+
+                } else {
+                    $response = array("status" => "error", "message" => "Error moving combined PDF to designated folder");
+                    echo json_encode($response);
+                }
             }
         } else {
-            $response = array("status"=>"error", "message"=>"Error moving combined PDF to designated folder");
+            $response = array("status" => "error", "message" => "Error combining PDFs");
             echo json_encode($response);
         }
     }
-    } else {
-        $response = array("status"=>"error", "message"=>"Error combining PDFs");
-        echo json_encode($response);
-    }
 } else {
-    $response = array("status"=>"error", "message"=>"Incomplete Fields");
+    $response = array("status" => "error", "message" => "Incomplete Fields");
     echo json_encode($response);
 }
 

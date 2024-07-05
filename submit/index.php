@@ -44,11 +44,6 @@ $supplementaryMaterialsFileName = "";
 $graphicAbstractFileName = "";
 $cover_letter_file_main = $_FILES["cover_letter"];
 
-if (isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])) {
-    $cover_letter_file = "coverLetter" . time() . '-' . basename($cover_letter_file_main["name"]);
-
-    MoveFile("cover_letter", __DIR__ . "/uploadedFiles", $cover_letter_file);
-}
 
 $abstract = $_POST["abstract"];
 $corresponding_author = $_POST["corresponding_author"];
@@ -99,7 +94,8 @@ if (isset($title)) {
 
     // }
     $articleID = "ASFIRJ-" . date("Y") . "-" . $submissionsCount;
-
+    $RevisionsId = $articleID;
+    $revisionsCount = 0;
     // End Select Count 
 
 
@@ -221,7 +217,6 @@ if (isset($title)) {
         }
         if (isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"])) {
             $tablesFileName = "tables" . time() . '-' . basename($figures["name"]);
-
             MoveFile("tables", __DIR__ . "/uploadedFiles", $tablesFileName);
         }
 

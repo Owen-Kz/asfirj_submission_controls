@@ -17,13 +17,13 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
           if(!$stmt){
               echo json_encode(array("status" => "error", "message" => $stmt->error));
           }
-          $stmt->bind_param("ssssssssssssss",$type, $RevisionsId, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $tablesName, $figuresName, $abstractFileName, $supplementsFileName,$submissionStatus, $articleID);
+          $stmt->bind_param("ssssssssssssss",$type, $RevisionsId, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $submissionStatus, $articleID);
           $stmt->execute();
           $response = array("status"=>"success", "message"=>"Submission Successful");
           echo json_encode($response);
     }else{
         // Create a NEw Submission if the submission does not exist 
-        $stmt = $con->prepare("INSERT INTO `submissions` ( `article_type`, `discipline`, `title`, `manuscript_file`, `cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `revision_id`, `status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?");
+        $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`, `cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `revision_id`, `status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         if(!$stmt){
             echo $stmt->error;
             exit;

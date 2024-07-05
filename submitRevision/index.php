@@ -2,6 +2,7 @@
 include "../backend/cors.php";
 include "../backend/db.php";
 include "../backend/checkifAuthorExists.php";
+include "../backend/updateRevision.php";
 
 session_start();
 function MoveFile($outputFile, $designatedDirectory, $newFilename){
@@ -33,16 +34,17 @@ $supplementary_material = $_FILES["supplementary_materials"];
 $graphic_abstract = $_FILES["graphic_abstract"];
 $tables = $_FILES["tables"];
 $manuscriptId = $_POST["manuscript_id"];
+$revisionStatus = $_POST["review_status"];
+$combinedFilename = "";
 
 $cover_letter = $_FILES["cover_letter"];
 $cover_letter_file = "";
+$manuscriptFileName = "";
+$tablesFileName = "";
+$figuresFileName = "";
+$supplementaryMaterialsFileName = "";
+$graphicAbstractFileName = "";
 $cover_letter_file_main = $_FILES["cover_letter"];
-
-if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
-    $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
-
-    MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
-}
 
 $abstract = $_POST["abstract"];
 $corresponding_author = $_POST["corresponding_author"];
@@ -50,7 +52,7 @@ $Buffer = bin2hex(random_bytes(7));
 $articleID = $manuscriptId;
 
 if(isset($title)){
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `status` = 'returned_for_revision' AND `corresponding_authors_email` = ?");
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND (`status` = 'returned_for_revision' OR `status` = 'revision_saved') AND `corresponding_authors_email` = ?");
     $stmt->bind_param("ss", $articleID, $corresponding_author);
     if(!$stmt){
         $response = array("status"=>"error", "message" => $con->error);
@@ -62,7 +64,7 @@ if(isset($title)){
     $count = mysqli_num_rows($result);
     if($count > 0){
         $row = $result->fetch_assoc();
-        $revisionsCount = $row["revisions_count"];
+        $revisionsCount = (int) $row["revisions_count"];
         $newRevisionsCount = (int) $revisionsCount + 1;
 
         $RevisionsId = $articleID.".R".$newRevisionsCount;
@@ -155,26 +157,85 @@ if(isset($title)){
     }
     }
 
+// if the revision status is set to save for later 
+if($revisionStatus === "saved_for_later"){
+
+        // Logic For file upload should go here 
+        if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
+            $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+        
+            MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
+        }
+        if(isset($manuscript_file) && $manuscript_file["size"] > 0 && isset($_FILES["manuscript_file"]["tmp_name"])){
+            $combinedFilename = "manuscriptFile".time() . '-' . basename($manuscript_file["name"]);
+
+            MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $combinedFilename);
+        }
+        if(isset($figures) && $figures["size"] > 0 && isset($_FILES["figures"]["tmp_name"])){
+            $figuresFileName = "figures".time() . '-' . basename($figures["name"]);
+
+            MoveFile("figures",  __DIR__."/uploadedFiles", $figuresFileName);
+        }
+        if(isset($supplementary_material) && $supplementary_material["size"] > 0 && isset($_FILES["supplementary_materials"]["tmp_name"])){
+            $supplementaryMaterialsFileName = "supplementaryMaterial".time() . '-' . basename($supplementary_material["name"]);
+
+            MoveFile("supplementary_materials",  __DIR__."/uploadedFiles", $supplementaryMaterialsFileName);
+        }
+        if(isset($graphic_abstract) && $graphic_abstract["size"] > 0 && isset($_FILES["graphic_abstract"]["tmp_name"])){
+            $graphicAbstractFileName = "graphicAbstract".time() . '-' . basename($graphic_abstract["name"]);
+
+            MoveFile("graphic_abstract",  __DIR__."/uploadedFiles", $graphicAbstractFileName);
+        }
+
+        if(isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"])){
+            $tablesFileName = "tables".time() . '-' . basename($tables["name"]);
+
+            MoveFile("tables",  __DIR__."/uploadedFiles", $tablesFileName);
+        }
+        
+    UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName);
+}else{
+    // $fields = array(
+    //     'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
+    // );
     // Prepare files for sending to Node.js server
-    $fields = array(
-        'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
-    );
-    if(isset($figures['tmp_name'])){
-        $fields["figures"] = new CURLFile($figures['tmp_name'], $figures['type'], $figures['name']);
-    }
-    
-    if(isset($supplementary_material['tmp_name'])){
+             // Logic For file upload should go here 
+             if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
+                $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+            
+                MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
+            }
+// Path to save the dummy PDF file
+$dummyPDFPath = '../temp/dummy.pdf';
 
+$fields = array(
+    'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
+);
+if (isset($figures) && $figures["size"] > 0 && isset($_FILES["figures"]["tmp_name"])) {
+    $fields["figures"] = new CURLFile($figures['tmp_name'], $figures['type'], $figures['name']);
+} else {
+    // Use            the dummy PDF if figures file does not exist
+    $fields["figures"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
+}
+
+if (isset($supplementary_material) && $supplementary_material["size"] > 0 && isset($_FILES["supplementary_materials"]["tmp_name"])) {               
     $fields['supplementary_material'] = new CURLFile($supplementary_material['tmp_name'], $supplementary_material['type'], $supplementary_material['name']);
+}else {
+    // Use the dummy PDF if supplementary_material file does not exist
+    $fields["supplementary_material"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
 }
-
-if(isset($graphic_abstract['tmp_name'])){
+if (isset($graphic_abstract) && $graphic_abstract["size"] > 0 && isset($_FILES["graphic_abstract"]["tmp_name"])) {
     $fields['graphic_abstract'] = new CURLFile($graphic_abstract['tmp_name'], $graphic_abstract['type'], $graphic_abstract['name']);
+}else{
+    $fields["graphic_abstract"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
 }
 
-if(isset($tables['tmp_name'])){
-        $fields["tables"] = new CURLFile($tables['tmp_name'], $tables['type'], $tables['name']);
+if (isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"])) {
+    $fields["tables"] = new CURLFile($tables['tmp_name'], $tables['type'], $tables['name']);
+}else{
+    $fields["tables"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
 }
+
 
     // Send files to Node.js server
     $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL
@@ -208,22 +269,7 @@ if ($response) {
 
         if ($combinedFilename) {
             // Finally UploadDocuments after file has been combined
-            $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`,`revision_id`,`revisions_count`, `discipline`, `title`, `manuscript_file`,`cover_letter_file`, `abstract`, `corresponding_authors_email`, `article_id`) VALUES(?,?,?, ?, ?, ?, ?, ?, ?,?)");
-            $stmt->bind_param("ssisssssss", $type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID);
-            if($stmt->execute()){
-                // UPdaet the Status 
-                $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'revision_submitted' WHERE `article_id` = ?");
-                if(!$stmt){
-                    echo json_encode(array("status" => "error", "message" => $stmt->error));
-                }
-                $stmt->bind_param("s", $articleID);
-                $stmt->execute();
-                $response = array("status"=>"success", "message"=>"Submission Successful");
-                echo json_encode($response);
-            } else {
-                $response = array("status"=>"error", "message"=>"Could Not Complete Submission");
-                echo json_encode($response);
-            }
+            UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $$graphicAbstractFileName, $supplementaryMaterialsFileName);
         } else {
             $response = array("status"=>"error", "message"=>"Error moving combined PDF to designated folder");
             echo json_encode($response);
@@ -233,12 +279,13 @@ if ($response) {
         $response = array("status"=>"error", "message"=>"Error combining PDFs");
         echo json_encode($response);
     }
-
+}
 }else{
     $response = array("status"=>"error", "message" => "This Submission Does not Exist Or has not been returned for Review");
     echo json_encode($response);
     exit;
 }
+    
 } else {
     $response = array("status"=>"error", "message"=>"Incomplete Fields");
     echo json_encode($response);

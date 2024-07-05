@@ -226,25 +226,52 @@ if (isset($title)) {
 
 
     } else {
-        $fields = array(
-            'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
-        );
-        if (isset($figures['tmp_name'])) {
-            $fields["figures"] = new CURLFile($figures['tmp_name'], $figures['type'], $figures['name']);
-        }
+             // Logic For file upload should go here 
+             if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
+                $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+            
+                MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
+            }
+// Path to save the dummy PDF file
+$dummyPDFPath = '../temp/dummy.pdf';
+// $fields = array(
+//     'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
+// );
+        // // Logic For file upload should go here 
+        // if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
+        //     $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+        
+        //     MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
+        // }
 
-        if (isset($supplementary_material['tmp_name'])) {
+$fields = array(
+    'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
+);
+if (isset($figures) && $figures["size"] > 0 && isset($_FILES["figures"]["tmp_name"])) {
+    $fields["figures"] = new CURLFile($figures['tmp_name'], $figures['type'], $figures['name']);
+} else {
+    // Use            the dummy PDF if figures file does not exist
+    $fields["figures"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
+}
 
-            $fields['supplementary_material'] = new CURLFile($supplementary_material['tmp_name'], $supplementary_material['type'], $supplementary_material['name']);
-        }
+if (isset($supplementary_material) && $supplementary_material["size"] > 0 && isset($_FILES["supplementary_materials"]["tmp_name"])) {               
+    $fields['supplementary_material'] = new CURLFile($supplementary_material['tmp_name'], $supplementary_material['type'], $supplementary_material['name']);
+}else {
+    // Use the dummy PDF if supplementary_material file does not exist
+    $fields["supplementary_material"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
+}
+if (isset($graphic_abstract) && $graphic_abstract["size"] > 0 && isset($_FILES["graphic_abstract"]["tmp_name"])) {
+    $fields['graphic_abstract'] = new CURLFile($graphic_abstract['tmp_name'], $graphic_abstract['type'], $graphic_abstract['name']);
+}else{
+    $fields["graphic_abstract"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
+}
 
-        if (isset($graphic_abstract['tmp_name'])) {
-            $fields['graphic_abstract'] = new CURLFile($graphic_abstract['tmp_name'], $graphic_abstract['type'], $graphic_abstract['name']);
-        }
+if (isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"])) {
+    $fields["tables"] = new CURLFile($tables['tmp_name'], $tables['type'], $tables['name']);
+}else{
+    $fields["tables"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
+}
 
-        if (isset($tables['tmp_name'])) {
-            $fields["tables"] = new CURLFile($tables['tmp_name'], $tables['type'], $tables['name']);
-        }
 
         // Send files to Node.js server
         $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL
@@ -263,7 +290,7 @@ if (isset($title)) {
         $response = curl_exec($ch);
         if (curl_errno($ch)) {
             // echo 'Error:' . curl_error($ch);
-            $response = array("status" => "error", "message" => 'Error:' . curl_error($ch));
+            $response = array("status" => "error", "message" => 'Curl Error:' . curl_error($ch));
             echo json_encode($response);
             exit;
         }

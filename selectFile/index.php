@@ -1,8 +1,8 @@
 <?php
-
 if (isset($_GET['file'])) {
     $fileName = basename($_GET['file']);
-    $filePath = './uploadedFiles/' . $fileName;
+  
+    $filePath = '../uploadedFiles/' . $fileName;
 
     if (file_exists($filePath)) {
         // Serve the file as a download

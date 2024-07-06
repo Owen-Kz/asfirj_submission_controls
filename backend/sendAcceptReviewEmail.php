@@ -1,6 +1,6 @@
 <?php
 
-function SendWelcomeEmail($RecipientEmail){
+function SendAcceptReviewEmail($RecipientEmail, $manuscriptId){
 
     require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
     // Comment out the above line if not using Composer
@@ -45,13 +45,9 @@ try {
     // print_r($response->headers());
     // print $response->body() . "\n";
     $currentYear = date("Y");
-    $subject = "ASFIRJ Account Created";
-    $htmlContent= "<h2> Hi, $prefix $RecipientName<h2>
-    <p> Welcome to ASFIRJ</p>
-    <p><a href=https://authors.asfirj.org/verify?a=$encryptedButton>click here</a> to verify your account. </p>
-    <p>Or paste this <a href=https://authors.asfirj.org/verify?a=$encryptedButton>https://authors.asfirj.org/verify?a=$encryptedButton</a> link in your browser</p>
-    <p><center><h6>African Science Research Journal</h6></p>
-    ";
+    $subject = "Invitation to review manuscript for ASFIRJ ($manuscriptId)";
+
+    
     $message =  <<<EOT
     <!DOCTYPE html>
     <html lang="en">
@@ -60,14 +56,24 @@ try {
         <title>Email Content</title>
     </head>
     <body>
-        <div>
-            $htmlContent
-        </div>
-        <footer>
-            <p>ASFI Research Journal (c) $currentYear</p>
-        </footer>
+        <p>[Manuscript title] “ASFI Research Journal of the African Science Frontiers Initiatives (Manuscript ID)”</p>
+        <p>[Date of sending invite]</p>
+        <p>[Name of Invited Reviewer],</p>
+        <p>Thank you for accepting to review this paper. The manuscript files are now available for you on your ASFIRJ Reviewer Dashboard, which you can access using the link: <a href="[Link to Reviewers Dashboard]">Reviewers Dashboard</a>.</p>
+        <p>On the Reviewer Scoring Sheet, you will provide your reviewer report, evaluation, scoring, and rating of the different aspects of the manuscript. For detailed instructions to reviewers reviewing manuscripts for ASFIRJ, please visit this link: <a href="https://asfirj.org/reviewers.html">https://asfirj.org/reviewers.html</a>.</p>
+        <p>We will appreciate it if you can return your reviewer report and scoring sheet on or before [Date of Return the Review Report, which should be 14 days from the day of acceptance of review invite].</p>
+        <br/>
+        <p>Sincerely,</p>
+        <p>[Title and Name of Editor]<br>Editor</p>
+        <p><a href="mailto:submissions@asfirj.org">submissions@asfirj.org</a><br>ASFI Research Journal<br>Excellence. Quality. Impact<br>"Raising the bar of scientific publishing in Africa"</p>
+        <p><a href="https://asfirj.org/">https://asfirj.org/</a><br><a href="mailto:asfirj@asfirj.org">asfirj@asfirj.org</a></p>
+        <p>LinkedIn: <a href="https://www.linkedin.com/in/asfi-research-journal-1b9929309">www.linkedin.com/in/asfi-research-journal-1b9929309</a><br>
+        X (formerly Twitter): <a href="https://twitter.com/asfirj1">https://twitter.com/asfirj1</a><br>
+        Instagram: <a href="https://www.instagram.com/asfirj1/">https://www.instagram.com/asfirj1/</a><br>
+        WhatsApp: <a href="https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3">https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3</a></p>
     </body>
     </html>
+
     EOT;
 
         $email = new \SendGrid\Mail\Mail();

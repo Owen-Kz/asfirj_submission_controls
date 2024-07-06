@@ -2,10 +2,11 @@
 include "../../cors.php";
 include "../../db.php";
 // $data = json_decode(file_get_contents("php://input"), true);
+
 $action = $_GET["action"];
 $invitationFor = $_GET["invite_for"];
 
-if($invitationFor === "edit"){
+if($invitationFor === "review"){
 
 if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
     $article_id = $_GET["a_id"];
@@ -49,13 +50,13 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
 
 
                 if (isset($action)) {
-                    $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = 'edit_invitation_accepted' WHERE `invitation_link` =? AND `invited_user` =? ");
+                    $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = 'review_invitation_accepted' WHERE `invitation_link` =? AND `invited_user` =? ");
                     $stmt->bind_param("ss", $article_id, $userEmail);
                     if ($stmt->execute()) {
                         $response = array("status" => "success", "message" => "Invitation accepted successfully, redirecting to create account for ". $invitedUserEmail, "email" => $invitedUserEmail);
 
                         // Update the edit process 
-                        $stmt = $con->prepare("UPDATE `submitted_for_edit` SET `status` = 'edit_invitation_accepted' WHERE `article_id`=? AND `editor_email` =?");
+                        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = 'review_invitation_accepted' WHERE `article_id`=? AND `reviewer_email` =?");
                         $stmt->bind_param("ss",$invitationId, $invitedUserEmail );
                         $stmt->execute();
                         echo json_encode($response);
@@ -72,7 +73,7 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
 
 
                         // Update the edit process 
-                        $stmt = $con->prepare("UPDATE `submitted_for_edit` SET `status` = 'invitation_rejected' WHERE `article_id`=? AND `editor_email` =?");
+                        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = 'invitation_rejected' WHERE `article_id`=? AND `reviewer_email` =?");
                         $stmt->bind_param("ss",$invitationId, $invitedUserEmail );
                         $stmt->execute();
 

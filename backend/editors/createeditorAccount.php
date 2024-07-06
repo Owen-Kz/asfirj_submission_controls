@@ -20,7 +20,7 @@ $orcidID = $data["orcid"];
 $password = $data["password"];
 
 
-$stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `reviewer_email` =?");
+$stmt = $con->prepare("SELECT * FROM `submitted_for_edit` WHERE `editor_email` =?");
 $stmt->bind_param("s", $email);
 if($stmt->execute()){
     $result = $stmt->get_result();
@@ -43,18 +43,34 @@ if(isset($email) && isset($password)){
             echo "Account Already Exisits";
         }else{
             
-            $stmt = $con->prepare("INSERT INTO `authors_account` (`prefix`, `email`, `orcid_id`, `discipline`, `firstname`, `lastname`, `othername`, `affiliations`, `affiliation_country`,  `affiliation_city`, `is_available_for_review`, `is_reviewer`, `reviewer_invite_status`, `account_status`, `password`) VALUES (?,?,?,?,?,?,?,?,?,?, ?, ?,?,?,?)");
+            $stmt = $con->prepare("INSERT INTO `authors_account` (`prefix`, `email`, `orcid_id`, `discipline`, `firstname`, `lastname`, `othername`, `affiliations`, `affiliation_country`,  `affiliation_city`, `is_available_for_review`, `is_reviewer`, `reviewer_invite_status`, `is_editor`, `editor_invite_status`, `account_status`, `password`) VALUES (?,?,?,?,?,?,?,?,?,?, ?, ?,?,?,?,?,?)");
             if(!$stmt){
                 $response = array("status"=>"error", "message"=>$stmt->error);
                 echo json_encode($response);
             }else{
                 $accountStatus = "verified";
                 $reviewInviteStatus = "accepted";
-            $stmt->bind_param("sssssssssssssss", $prefix, $email, $orcidID, $discipline, $firstname, $lastname, $othername, $affiliations, $affiliations_country, $affiliations_city, $available_for_review, $available_for_review,$reviewInviteStatus, $accountStatus, $pass);
+            $stmt->bind_param("sssssssssssssssss", $prefix, $email, $orcidID, $discipline, $firstname, $lastname, $othername, $affiliations, $affiliations_country, $affiliations_city, $available_for_review, $available_for_review, $reviewInviteStatus, $available_for_review, $reviewInviteStatus, $accountStatus, $pass);
             
             if($stmt->execute()){
+                        // Copy the Data to the editors table if not exists
+            $stmt = $con->prepare("SELECT * FROM `editors` WHERE `email` = ?");
+            $stmt->bind_param("s", $currentEmail);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result->num_rows > 0){
+
+            }else{
+                $editorialLevel = "Secional Editor";
+                $fullname = $prefix." ".$firstname." ".$othername." ".$lastname;
+                $stmt = $con->prepare("INSERT INTO `editors`( `email`, `fullname`, `password`, `editorial_level`, `editorial_section`) VALUES (?,?,?,?,?)");
+                $stmt->bind_param("sssss",$email, $fullname, $pass, $editorialLevel, $discipline);
+                $stmt->execute();
+            
+
                 $response = array("status"=>"success", "message"=>"Account Created Succesfully");
                 echo json_encode($response);
+            }
             }else{
                 $response = array("status"=>"error", "message"=>"Could Not Create Account");
                 echo json_encode($response);

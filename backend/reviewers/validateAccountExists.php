@@ -11,7 +11,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 $email = $data["encrypted"];
 
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`email`) = ?");
+$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
 $stmt->bind_param("s", $email);
 if(!$stmt){
     print_r($con->error);
@@ -20,6 +20,10 @@ if(!$stmt){
     $result = $stmt->get_result();
 
     if(mysqli_num_rows($result) > 0){
+        // Set the account to a reviewer account 
+        $stmt = $con->prepare("UPDATE `authors_account` SET `is_reviewer` = 'yes', `is_available_for_review` = 'yes' WHERE `email` = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
     $response = array("status" => "accountExists", "message"=>"redirect to login");
     echo json_encode($response);
     }else{

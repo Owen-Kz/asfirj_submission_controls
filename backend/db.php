@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 // require_once dirname(__DIR__) . "/backend/exportENV.php";
 
-
+echo "MySpeace";
 require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
 // Comment out the above line if not using Composer
 // require("<PATH TO>/sendgrid-php.php");

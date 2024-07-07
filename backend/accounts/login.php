@@ -20,7 +20,7 @@ if(isset($pass) && isset($email_post)){
 
     $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ? LIMIT 1");
     if(!$stmt){
-        echo json_encode(array("error"=>$con->error))
+        echo json_encode(array("error"=>$con->error));
     }
     $stmt->bind_param("s", $userID);
 

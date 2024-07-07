@@ -3,6 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 // require_once dirname(__DIR__) . "/backend/exportENV.php";
 
+
 require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
 // Comment out the above line if not using Composer
 // require("<PATH TO>/sendgrid-php.php");
@@ -14,10 +15,10 @@ require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (rec
 // Inmport Environment Variables
 include __DIR__ .'/exportENV.php';
 
-$server__DB_rays = getenv('DB_HOST');
-$user_DB_rays = getenv('DB_USER');
-$pass_DB_rays = getenv('DB_PASS');
-$db_DB_rays = getenv("DB_NAME");
+$server__DB_rays = $_ENV['DB_HOST'];
+$user_DB_rays = $_ENV['DB_USER'];
+$pass_DB_rays = $_ENV['DB_PASS'];
+$db_DB_rays = $_ENV["DB_NAME"];
 
 
 

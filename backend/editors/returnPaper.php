@@ -29,16 +29,7 @@ if(isset($editor)){
         $row = mysqli_fetch_array($result);
         $editor_email = $row["email"];
 
-        // check if the review already exists
-        $stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` =? AND `reviewer_email` =? AND (`status` = 'submitted_for_review' OR `status` = 'review_invitation_accepted' OR `status` = 'review_submitted'");
-        $stmt->bind_param("ss", $ArticleId, $reviewerEmail);
-        $result = $stmt->get_result();
-        if($result->num_rows > 0){
-            $response = array("status"=>"success", "message" => "An Invitation was previously sent to $reviewerEmail");
-            echo json_encode($response);
-        }else{
-
-        $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'submitted_for_review' WHERE `revision_id` = ?");        
+        $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'returned' WHERE `revision_id` = ?");        
         $stmt->bind_param("s", $article_id);
         if($stmt->execute()){
         $response = array("status" => "success", "message"=>"Review Process Initiated");
@@ -53,9 +44,9 @@ if(isset($editor)){
        if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id)){
 
         // Create the review process entry 
-        $stmt = $con->prepare("INSERT INTO `submitted_for_review` (`article_id`, `reviewer_email`, `submitted_by`) VALUES (?,?,?)");
-        $stmt->bind_param("sss", $article_id, $reviewerEmail, $editor_email);
-        if($stmt->execute()){
+        // $stmt = $con->prepare("INSERT INTO `submitted_for_review` (`article_id`, `reviewer_email`, `submitted_by`) VALUES (?,?,?)");
+        // $stmt->bind_param("sss", $article_id, $reviewerEmail, $editor_email);
+        // if($stmt->execute()){
             $currentTime = time();
             $oneWeekLater = strtotime('+1 week', $currentTime);
 
@@ -63,25 +54,22 @@ if(isset($editor)){
             $expiryDate = date('Y-m-d', $oneWeekLater);
            
             // Add teh Entry to the invitations list 
-            $invitedFor = "Submission Review";
-            $stmt = $con->prepare("INSERT INTO `invitations`(`invited_user`, `invitation_link`, `invitation_expiry_date`, `invited_for`, `invited_user_name`) VALUES (?,?,?,?,?)");
-            $stmt->bind_param("sssss", $reviewerEmail, $article_id, $expiryDate, $invitedFor, $editor_email);
-            $stmt->execute();
+            // $invitedFor = "Submission Review";
+            // $stmt = $con->prepare("INSERT INTO `invitations`(`invited_user`, `invitation_link`, `invitation_expiry_date`, `invited_for`, `invited_user_name`) VALUES (?,?,?,?,?)");
+            // $stmt->bind_param("sssss", $reviewerEmail, $article_id, $expiryDate, $invitedFor, $editor_email);
+            // $stmt->execute();
             $response = array("status"=>"success", "message" => "Email Has been Sent");
             echo json_encode($response);
-        }
-    
+        // }
         
         }else{
             $response = array("status"=>"error", "message" => $stmt->error);
             print_r($response);
         }
-    
     }else{
         $response = array("status"=>"error", "message" => "Could Not Sent Mail");
         echo json_encode($response);
     }
-}
     }else{
         $response = array("status"=>"error", "message" => "Unauthorized account");
         echo json_encode($response);

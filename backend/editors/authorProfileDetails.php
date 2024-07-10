@@ -24,7 +24,7 @@ if(!$stmt){
         $response = array("status" => "success", "accountData" => $row);
         echo json_encode($response);
     }else{
-        $response = array("status" => "error", "accountData" => "NotFound");
+        $response = array("status" => "error");
         echo json_encode($response);
     }
 }

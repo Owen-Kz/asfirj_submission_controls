@@ -9,7 +9,7 @@ $adminId = $data["admin_id"];
 if(isset($adminId)){
     $isAdminAccount = isAdminAccount($adminId);
     if($isAdminAccount){
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `status` != 'saved_for_later' AND `status` != 'revision_saved'");
+        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `status` != 'saved_for_later' AND `status` != 'revision_saved' AND 'status' != 'returned'");
         if(!$stmt){
     echo json_encode(array("error" => $stmt->error));
         }

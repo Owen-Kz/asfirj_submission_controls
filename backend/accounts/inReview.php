@@ -9,7 +9,7 @@ $useremail = $data["user"];
 
 if($useremail){
     // Check if the user has any submissions under thier email 
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE md5(`corresponding_authors_email`) = ? AND `status` = 'submitted_for_review' OR `status` = 'saved_for_later'");
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE md5(`corresponding_authors_email`) = ? AND (`status` = 'accepted' OR `status` = 'rejected')");
     if(!$stmt){
         echo json_encode(array("error" => $stmt->error));
     }

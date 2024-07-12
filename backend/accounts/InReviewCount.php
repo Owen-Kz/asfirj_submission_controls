@@ -6,7 +6,7 @@ include "../db.php";
 $userId = $_GET["u_id"];
 
 if(isset($userId)){
-    $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submissions` WHERE md5(`corresponding_authors_email`) = ? AND `status` = 'submitted_for_review' OR `status` = 'review_submitted'");
+    $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submissions` WHERE md5(`corresponding_authors_email`) = ? AND (`status` = 'rejected' OR `status` = 'accepted')");
     $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();

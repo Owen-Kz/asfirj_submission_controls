@@ -39,7 +39,7 @@ if(isset($email) && isset($password)){
             echo json_encode($response);
         }else{
             
-            $stmt = $con->prepare("INSERT INTO `authors_account` (`prefix`, `email`, `firstname`, `lastname`, `othername`, `orcid_id`, `discipline`, `affiliations`, `affiliation_country`, `affiliation_city`, `password`, `is_available_for_review`) VALUES (?,?,?,?,?,?,?,?,?, ?)");
+            $stmt = $con->prepare("INSERT INTO `authors_account` (`prefix`, `email`, `firstname`, `lastname`, `othername`, `orcid_id`, `discipline`, `affiliations`, `affiliation_country`, `affiliation_city`, `password`, `is_available_for_review`) VALUES (?,?,?,?,?,?,?,?,?, ?,?,?)");
             if(!$stmt){
                 $response = array("status"=>"error", "message"=>$con->error);
                 echo json_encode($response);

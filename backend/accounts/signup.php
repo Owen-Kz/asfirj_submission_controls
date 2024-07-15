@@ -41,7 +41,7 @@ if(isset($email) && isset($password)){
             
             $stmt = $con->prepare("INSERT INTO `authors_account` (`prefix`, `email`, `firstname`, `lastname`, `othername`, `orcid_id`, `discipline`, `affiliations`, `affiliation_country`, `affiliation_city`, `password`, `is_available_for_review`) VALUES (?,?,?,?,?,?,?,?,?, ?)");
             if(!$stmt){
-                $response = array("status"=>"error", "message"=>$stmt->error);
+                $response = array("status"=>"error", "message"=>$con->error);
                 echo json_encode($response);
             }else{
             $stmt->bind_param("ssssssssssss", $prefix, $email, $firstname, $lastname, $othername,$orcidID, $discipline, $affiliations, $affiliations_country, $affiliations_city, $pass, $available_for_review);

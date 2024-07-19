@@ -12,12 +12,22 @@ function MoveFile($outputFile, $designatedDirectory, $newFilename)
     // Move the final merged PDF to the designated folder
     $manuscriptFile = basename($_FILES[$outputFile]["name"]);
     $targetFile = "../uploadedFiles/" . $manuscriptFile;
-    if (!is_writable("../uploadedFiles/")) {
-        die("Target directory is not writable.");
-    }
+    
+
+    print("Attempting to move file to: " . $targetFile);
+
     if (!file_exists("../uploadedFiles/")) {
+        print("Directory does not exist. Creating directory...");
         mkdir("../uploadedFiles/", 0777, true);
     }
+
+    if (!is_writable("../uploadedFiles/")) {
+        print("Target directory is not writable.");
+        die("Target directory is not writable.");
+    }
+    // if (!file_exists("../uploadedFiles/")) {
+    //     mkdir("../uploadedFiles/", 0777, true);
+    // }
     if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {
         // move_uploaded_file($outputFile["tmp_name"], $targetFile);
         rename("../uploadedFiles/" . $_FILES[$outputFile]["name"], "../uploadedFiles/" . $newFilename);

@@ -14,7 +14,7 @@ function MoveFile($outputFile, $designatedDirectory, $newFilename)
     $targetFile = __DIR__."../uploadedFiles/" . $manuscriptFile;
     
 
-    print("Attempting to move file to: " . $targetFile);
+    // print("Attempting to move file to: " . $targetFile);
 
     if (!file_exists(__DIR__."../uploadedFiles/")) {
         print("Directory does not exist. Creating directory...");

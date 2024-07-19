@@ -1,4 +1,5 @@
 <?php
+include "../backend/cors.php";
 if (isset($_GET['file'])) {
     $fileName = basename($_GET['file']);
   

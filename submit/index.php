@@ -11,17 +11,17 @@ function MoveFile($outputFile, $designatedDirectory, $newFilename)
 {
     // Move the final merged PDF to the designated folder
     $manuscriptFile = basename($_FILES[$outputFile]["name"]);
-    $targetFile = "../uploadedFiles/" . $manuscriptFile;
+    $targetFile = __DIR__."../uploadedFiles/" . $manuscriptFile;
     
 
     print("Attempting to move file to: " . $targetFile);
 
-    if (!file_exists("../uploadedFiles/")) {
+    if (!file_exists(__DIR__."../uploadedFiles/")) {
         print("Directory does not exist. Creating directory...");
-        mkdir("../uploadedFiles/", 0777, true);
+        mkdir(__DIR__."../uploadedFiles/", 0777, true);
     }
 
-    if (!is_writable("../uploadedFiles/")) {
+    if (!is_writable(__DIR__."../uploadedFiles/")) {
         print("Target directory is not writable.");
         die("Target directory is not writable.");
     }
@@ -30,7 +30,7 @@ function MoveFile($outputFile, $designatedDirectory, $newFilename)
     // }
     if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {
         // move_uploaded_file($outputFile["tmp_name"], $targetFile);
-        rename("../uploadedFiles/" . $_FILES[$outputFile]["name"], "../uploadedFiles/" . $newFilename);
+        rename(__DIR__."../uploadedFiles/" . $_FILES[$outputFile]["name"],__DIR__."../uploadedFiles/" . $newFilename);
         // print_r("File Uploaded");
     } else {
         echo "Could Not Upload File " . json_encode($_FILES[$outputFile]);

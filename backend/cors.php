@@ -1,5 +1,5 @@
 <?php
-function enableCORS() {
+// function enableCORS() {
     if (isset($_SERVER['HTTP_ORIGIN'])) {
 
         // Allow from any origin
@@ -18,6 +18,6 @@ function enableCORS() {
         }
         exit(0);
     }
-}
+// }
 
-enableCORS();
+// enableCORS();

@@ -6,7 +6,7 @@ include "../isAdministrator.php";
 $adminId = $_GET["a_id"];
 if(isset($adminId)){
     if(isAdministrator($adminId)){
-        $stmt = $con->prepare("SELECT * FROM `news_letter_subscribers` WHERE 1");
+        $stmt = $con->prepare("SELECT * FROM `news_letter_subscribers` WHERE 1 ORDER BY `id` DESC");
         $stmt->execute();
         $result = $stmt->get_result();
         if($result->num_rows > 0){

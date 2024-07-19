@@ -6,7 +6,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 if($data){
     $artilce_id = $data["id"];
-    $stmt = $con->prepare("SELECT * FROm `reviews` WHERE `article_id` = ? AND `review_status` = 'review_submitted'");
+    $stmt = $con->prepare("SELECT * FROm `reviews` WHERE `article_id` = ? AND `review_status` = 'review_submitted' ORDER BY `id` DESC");
     $stmt->bind_param("s", $artilce_id);
     if(!$stmt){
         echo json_encode(array("status" => "error", "message" => $stmt->error, "reviews" => []));

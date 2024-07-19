@@ -7,7 +7,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 $ArticleId = $data["article_id"];
 
 if($ArticleId){
-    $stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` = ?");
+    $stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` = ? ORDER BY `id` DESC");
     $stmt->bind_param("s", $ArticleId);
     $stmt->execute();
     $result  = $stmt->get_result();

@@ -9,7 +9,7 @@ $adminId = $data["admin_id"];
 if(isset($adminId)){
     $isAdminAccount = isAdminAccount($adminId);
     if($isAdminAccount){
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `status` != 'saved_for_later' AND `status` != 'revision_saved' AND 'status' != 'returned'");
+        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `status` != 'saved_for_later' AND `status` != 'revision_saved' AND 'status' != 'returned' ORDER BY `id` DESC");
         if(!$stmt){
     echo json_encode(array("error" => $stmt->error));
         }
@@ -24,7 +24,7 @@ if(isset($adminId)){
 
     }else{
         // Check if user has been invited for any submission 
-        $stmt = $con->prepare("SELECT * FROM `submitted_for_edit` WHERE md5(`editor_email`) = ?");
+        $stmt = $con->prepare("SELECT * FROM `submitted_for_edit` WHERE md5(`editor_email`) = ? ORDER BY `id` DESC");
         if(!$stmt){
             echo json_encode(array("error" => $stmt->error));
                 }

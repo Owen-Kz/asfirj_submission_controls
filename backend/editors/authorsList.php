@@ -7,7 +7,7 @@ include "./isAdminAccount.php";
 if(isset($_GET["u_id"])){
     $isAdmin = isAdminAccount($_GET['u_id']);
     if($isAdmin){
-    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE 1");
+    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE 1 ORDER BY `id` DESC");
     if(!$stmt){
         echo $stmt->error;
     }

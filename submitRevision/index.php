@@ -3,6 +3,8 @@ include "../backend/cors.php";
 include "../backend/db.php";
 include "../backend/checkifAuthorExists.php";
 include "../backend/updateRevision.php";
+include "../backend/addSubmissoinKeywords.php";
+include "../backend/addSuggestedReviewers.php";
 
 session_start();
 function MoveFile($outputFile, $designatedDirectory, $newFilename){
@@ -155,6 +157,47 @@ if(isset($title)){
             }
         }
     }
+            // ADD KEYWORDs 
+            if(isset($_POST["keyword"])){
+                $keywords = $_POST["keyword"];
+                for($i = 0; $i<count($keywords); $i++){
+                    try {
+                   if(AddSubmissionKeywords($articleID, $keywords[$i])){
+                    
+                   }else{
+                    throw new Exception("Could Not Add keyword: " . $keywords[$i]);
+    
+                   }
+                } catch (Exception $e) {
+                    $response = array('status' => 'error', 'message' => 'ErrorKeywords:' . $e->getMessage());
+                    echo json_encode($response);
+                    exit;
+                }
+                    
+                }
+            }
+            // Add Suggested REviewers
+            if(isset($_POST["suggested_reviewer_email"])){
+                $suggestedReviewerEmail = $_POST["suggested_reviewer_email"];
+                $suggested_reviewer_fullname = $_POST["suggested_reviewer_fullname"];
+                $suggested_reviewer_affiliation = $_POST["suggested_reviewer_affiliation"];
+                $suggested_reviewer_country = $_POST["suggested_reviewer_country"];
+                $suggested_reviewer_city = $_POST["suggested_reviewer_city"];
+                for($i =0; $i < count($suggestedReviewerEmail); $i++){
+                    try{
+                       if(AddSuggestedReviewers($articleID, $suggested_reviewer_fullname[$i], $suggested_reviewer_affiliation[$i], $suggested_reviewer_country[$i], $suggested_reviewer_city[$i], $suggestedReviewerEmail[$i])){
+    
+                       }else{
+                        throw new Exception("Could Not Add Suggested Reviewer: " . $keywords[$i]);
+        
+                       }
+                    } catch (Exception $e) {
+                        $response = array('status' => 'error', 'message' => 'ErrorSuggestedReviewer:' . $e->getMessage());
+                        echo json_encode($response);
+                        exit;
+                    }
+                }
+            }
     }
 
 // if the revision status is set to save for later 

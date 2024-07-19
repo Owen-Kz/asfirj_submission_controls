@@ -6,7 +6,7 @@ include "../db.php";
 // session_start();
 if(isset($_GET["u_id"])){
 
-        $stmt = $con->prepare('SELECT * FROM `sent_emails` WHERE md5(`recipient`) = ?');
+        $stmt = $con->prepare('SELECT * FROM `sent_emails` WHERE md5(`recipient`) = ? ORDER BY `id` DESC');
         $stmt->bind_param("s", $_GET["u_id"]);
         $stmt->execute();
         $result = $stmt->get_result();

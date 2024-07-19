@@ -4,7 +4,7 @@ include "../cors.php";
 include "../db.php";
 
 if(isset($_GET["articleID"])){
-    $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `submission_id` = ?");
+    $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `submission_id` = ? ORDER BY `id` ASC");
     if(!$stmt){
         echo $stmt->error;
     }

@@ -1,8 +1,7 @@
 <?php
 
-include "./cors.php";
-include "db.php";
-session_start();
+include "../backend/cors.php";
+include "../backend/db.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 

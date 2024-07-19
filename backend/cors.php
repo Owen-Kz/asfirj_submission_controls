@@ -1,6 +1,7 @@
 <?php
-// function enableCORS() {
+function enableCORS() {
     if (isset($_SERVER['HTTP_ORIGIN'])) {
+
         // Allow from any origin
         header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
         header('Access-Control-Allow-Credentials: true');
@@ -17,4 +18,6 @@
         }
         exit(0);
     }
-// }
+}
+
+enableCORS();

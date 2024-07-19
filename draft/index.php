@@ -2,8 +2,8 @@
 include "../backend/cors.php";
 include "../backend/db.php";
 include "../backend/checkifAuthorExists.php";
-include "../backend/addSubmissoinKeywords.php";
-include "../backend/addSuggestedReviewers.php";
+// include "../backend/addSubmissoinKeywords.php";
+// include "../backend/addSuggestedReviewers.php";
 
 session_start();
 function MoveFile($outputFile, $designatedDirectory, $newFilename){
@@ -19,7 +19,7 @@ if (!file_exists("../uploadedFiles/")) {
 }
 if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {
 // move_uploaded_file($outputFile["tmp_name"], $targetFile);
-rename("../uploadedFiles/". $_FILES[$outputFile]["name"], "../uploadedFiles/".$newFilename);
+rename("../uploadedFiles/". $_FILES[$outputFile]["name"], '../uploadedFiles/'.$newFilename);
 // Update the database to include the new filename 
 
 }else{
@@ -27,8 +27,10 @@ rename("../uploadedFiles/". $_FILES[$outputFile]["name"], "../uploadedFiles/".$n
 }
 
 }
+// Use the same timestamp for all operations
 
 include "../backend/updateSubmission.php";
+
 
 $title = $_POST["manuscript_full_title"];
 $type = $_POST["article_type"];
@@ -42,6 +44,8 @@ $manuscriptId = $_POST["manuscript_id"];
 $submissionStatus = $_POST["review_status"];
 $combinedFilename = "";
 
+$timestamp = date("d-m-Y")."_".$title."_";
+
 $cover_letter = $_FILES["cover_letter"];
 $cover_letter_file = "";
 $manuscriptFileName = "";
@@ -50,6 +54,47 @@ $figuresFileName = "";
 $supplementaryMaterialsFileName = "";
 $graphicAbstractFileName = "";
 $cover_letter_file_main = $_FILES["cover_letter"];
+
+$authorsPrefix = [];
+$authors_firstname = [];
+$authors_lastname = [];
+$authors_other_name = [];
+$affiliation = [];
+$affiliation_country = [];
+$affiliation_city = [];
+$authorEmail = [];
+$authors_orcid = [];
+
+if(isset($_POST["authors_prefix"])){
+$authorsPrefix = $_POST["authors_prefix"];
+$authors_firstname = $_POST["authors_first_name"];
+$authors_lastname = $_POST["authors_last_name"];
+$authors_other_name = $_POST["authors_other_name"];
+$affiliation = $_POST["affiliation"];
+$affiliation_country = $_POST["affiliation_country"];
+$affiliation_city = $_POST["affiliation_city"];
+$authorEmail = $_POST["email"];
+$authors_orcid = $_POST["authors_orcid"];
+}
+
+$LoggedInauthorsPrefix = $_POST["loggedIn_authors_prefix"];
+$LoggedInauthors_firstname = $_POST["loggedIn_authors_first_name"];
+$LoggedInauthors_lastname = $_POST["loggedIn_authors_last_name"];
+$LoggedInauthors_other_name = $_POST["loggedIn_authors_other_name"];
+$LoggedInaffiliation = $_POST["loggedIn_affiliation"];
+$LoggedInaffiliation_country = $_POST["loggedIn_affiliation_country"];
+$LoggedInaffiliation_city = $_POST["loggedIn_affiliation_city"];
+$LoggedInauthorEmail = $_POST["loggedIn_author"];
+
+$loggedIn_authors_ORCID = $_POST["loggedIn_authors_ORCID"];
+
+$suggestedReviewerEmail = $_POST["suggested_reviewer_email"];
+$suggested_reviewer_fullname = $_POST["suggested_reviewer_fullname"];
+$suggested_reviewer_affiliation = $_POST["suggested_reviewer_affiliation"];
+$suggested_reviewer_country = $_POST["suggested_reviewer_country"];
+$suggested_reviewer_city = $_POST["suggested_reviewer_city"];
+
+$keywords = $_POST["keyword"];
 
 
 $abstract = $_POST["abstract"];
@@ -61,7 +106,7 @@ if(isset($title)){
     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
     $stmt->bind_param("ss", $articleID, $corresponding_author);
     if(!$stmt){
-        $response = array("status"=>"error", "message" => $con->error);
+        $response = array("status"=>"error", "message" => $stmt->error);
         echo json_encode($response);
         exit;
     }
@@ -75,177 +120,71 @@ if(isset($title)){
 
         $RevisionsId = $manuscriptId;
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // For Logged in Author
-        $LoggedInauthorsPrefix = $_POST["loggedIn_authors_prefix"];
-        $LoggedInauthors_firstname = $_POST["loggedIn_authors_first_name"];
-        $LoggedInauthors_lastname = $_POST["loggedIn_authors_last_name"];
-        $LoggedInauthors_other_name = $_POST["loggedIn_authors_other_name"];
-        $LoggedInaffiliation = $_POST["loggedIn_affiliation"];
-        $LoggedInaffiliation_country = $_POST["loggedIn_affiliation_country"];
-        $LoggedInaffiliation_city = $_POST["loggedIn_affiliation_city"];
-        $LoggedInauthorEmail = $_POST["loggedIn_author"];
-        $loggedIn_authors_ORCID = $_POST["loggedIn_authors_ORCID"];
-
-        $LoggedInauthorsFullname = "$LoggedInauthorsPrefix $LoggedInauthors_firstname $LoggedInauthors_lastname $LoggedInauthors_other_name";
-        try {
-            // Frist Check the the Author Exists 
-            $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ? AND `submission_id` = ?");
-            if(!$stmt){
-                throw new Exception("Failed to prepare SELECT statement: " . $stmt->error);
-
-            }
-            $stmt->bind_param("ss", $LoggedInauthorEmail, $articleID);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if($result->num_rows > 0){
-
-            }else{
-            $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`, `orcid_id`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?,?, ?, ?, ?, ?)");
-            if (!$stmt) {
-                throw new Exception("Failed to prepare INSERT statement: " . $stmt->error);
-            }
-            $stmt->bind_param("sssssss", $articleID, $LoggedInauthorsFullname, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
-            if (!$stmt->execute()) {
-                throw new Exception("Failed to execute statement Author: " . $stmt->error);
-            }
-        }
-        } catch (Exception $e) {
-            $response = array('status'=> 'error', 'message' => 'ErrorAuthor:'  . $e->getMessage());
-            echo json_encode($response);
-            exit;
-        }
-
-        // For other Authors 
-        if(isset($_POST["authors_prefix"])){
-        $authorsPrefix = $_POST["authors_prefix"];
-        $authors_firstname = $_POST["authors_first_name"];
-        $authors_lastname = $_POST["authors_last_name"];
-        $authors_other_name = $_POST["authors_other_name"];
-        $affiliation = $_POST["affiliation"];
-        $affiliation_country = $_POST["affiliation_country"];
-        $affiliation_city = $_POST["affiliation_city"];
-        $authorEmail = $_POST["email"];
-        $authors_orcid = $_POST["authors_orcid"];
-
-        for ($i = 0; $i < count($authorEmail); $i++){
-            $authorsFullname = "$authorsPrefix[$i] $authors_firstname[$i] $authors_lastname[$i] $authors_other_name[$i]";
-            try {
-                       // Frist Check the the Author Exists 
-            $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ? AND `submission_id` = ?");
-            if(!$stmt){
-                throw new Exception("Failed to prepare statement: " . $con->error);
-
-            }
-            $stmt->bind_param("ss",  $authorEmail[$i], $articleID);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if($result->num_rows > 0){
-
-            }else{
-                $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`,`orcid_id`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?, ?, ?, ?, ?,?)");
-                if (!$stmt) {
-                    throw new Exception("Failed to prepare statement: " . $con->error);
-                }
-                $stmt->bind_param("sssssss", $articleID, $authorsFullname, $authorEmail[$i], $authors_orcid[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i]);
-                if (!$stmt->execute()) {
-                    throw new Exception("Failed to execute statement Author: " . $stmt->error);
-                }
-            }
-            } catch (Exception $e) {
-                $response = array('status'=> 'error', 'message' => 'ErrorAuthor:'  . $e->getMessage());
-                echo json_encode($response);
-                exit;
-            }
-        }
-    }
-            // ADD KEYWORDs 
-            if(isset($_POST["keyword"])){
-                $keywords = $_POST["keyword"];
-                for($i = 0; $i<count($keywords); $i++){
-                    try {
-                   if(AddSubmissionKeywords($articleID, $keywords[$i])){
-                    
-                   }else{
-                    throw new Exception("Could Not Add keyword: " . $keywords[$i]);
-    
-                   }
-                } catch (Exception $e) {
-                    $response = array('status' => 'error', 'message' => 'ErrorKeywords:' . $e->getMessage());
-                    echo json_encode($response);
-                    exit;
-                }
-                    
-                }
-            }
-            // Add Suggested REviewers
-            if(isset($_POST["suggested_reviewer_email"])){
-                $suggestedReviewerEmail = $_POST["suggested_reviewer_email"];
-                $suggested_reviewer_fullname = $_POST["suggested_reviewer_fullname"];
-                $suggested_reviewer_affiliation = $_POST["suggested_reviewer_affiliation"];
-                $suggested_reviewer_country = $_POST["suggested_reviewer_country"];
-                $suggested_reviewer_city = $_POST["suggested_reviewer_city"];
-                for($i =0; $i < count($suggestedReviewerEmail); $i++){
-                    try{
-                       if(AddSuggestedReviewers($articleID, $suggested_reviewer_fullname[$i], $suggested_reviewer_affiliation[$i], $suggested_reviewer_country[$i], $suggested_reviewer_city[$i], $suggestedReviewerEmail[$i])){
-    
-                       }else{
-                        throw new Exception("Could Not Add Suggested Reviewer: " . $keywords[$i]);
-        
-                       }
-                    } catch (Exception $e) {
-                        $response = array('status' => 'error', 'message' => 'ErrorSuggestedReviewer:' . $e->getMessage());
-                        echo json_encode($response);
-                        exit;
-                    }
-                }
-            }
-    }
+ 
 
     // Prepare files for sending to Node.js server
     if($submissionStatus === "saved_for_later"){
         // Logic For file upload should go here 
-        if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
-            $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+        if(isset($_FILES["cover_letter"]) && isset($_FILES["cover_letter"]["size"]) > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
+            $fileExtensionCover= pathinfo($cover_letter_file_main["name"], PATHINFO_EXTENSION);
+
+            $cover_letter_file = "coverLetter-".$timestamp . '.' .$fileExtensionCover;
         
             MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
         }
-        if(isset($manuscript_file) && $manuscript_file["size"] > 0 && isset($_FILES["manuscript_file"]["tmp_name"])){
-            $combinedFilename = "manuscriptFile".time() . '-' . basename($manuscript_file["name"]);
+        if(isset($_FILES["manuscript_file"]) && isset($_FILES["manuscript_file"]["size"]) > 0 && isset($_FILES["manuscript_file"]["tmp_name"])){
+            $fileExtensionManuscript = pathinfo($_FILES["manuscript_file"]["name"], PATHINFO_EXTENSION);
+
+            $combinedFilename = "manuscriptFile-".$timestamp . '.' . $fileExtensionManuscript;
 
             MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $combinedFilename);
+        }else{
+            $combinedFilename = "";
         }
         if(isset($figures) && $figures["size"] > 0 && isset($_FILES["figures"]["tmp_name"])){
-            $figuresFileName = "figures".time() . '-' . basename($figures["name"]);
+            $fileExtensionFigures = pathinfo($figures["name"], PATHINFO_EXTENSION);
+
+            $figuresFileName = "figures-".$timestamp . '.' .$fileExtensionFigures;
 
             MoveFile("figures",  __DIR__."/uploadedFiles", $figuresFileName);
         }
         if(isset($supplementary_material) && $supplementary_material["size"] > 0 && isset($_FILES["supplementary_materials"]["tmp_name"])){
-            $supplementaryMaterialsFileName = "supplementaryMaterial".time() . '-' . basename($supplementary_material["name"]);
+            $fileExtensionMaterial = pathinfo($supplementary_material["name"], PATHINFO_EXTENSION);
+
+            $supplementaryMaterialsFileName = "supplementaryMaterial-".$timestamp . '.' . $fileExtensionMaterial;
 
             MoveFile("supplementary_materials",  __DIR__."/uploadedFiles", $supplementaryMaterialsFileName);
         }
         if(isset($graphic_abstract) && $graphic_abstract["size"] > 0 && isset($_FILES["graphic_abstract"]["tmp_name"])){
-            $graphicAbstractFileName = "graphicAbstract".time() . '-' . basename($graphic_abstract["name"]);
+            $fileExtension = pathinfo($graphic_abstract["name"], PATHINFO_EXTENSION);
 
+            // Create the new file name with the desired format
+            $graphicAbstractFileName = "graphicAbstract-" . $timestamp . '.' . $fileExtension;
+        
             MoveFile("graphic_abstract",  __DIR__."/uploadedFiles", $graphicAbstractFileName);
         }
 
         if(isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"])){
-            $tablesFileName = "tables".time() . '-' . basename($tables["name"]);
+            $fileExtensionTables = pathinfo($tables["name"], PATHINFO_EXTENSION);
+
+            $tablesFileName = "tables".$timestamp . '.' .$fileExtensionTables;
 
             MoveFile("tables",  __DIR__."/uploadedFiles", $tablesFileName);
         }
         
         
         // then update or insert the file into the database 
-        UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName);
+        UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
+
         
 
 }else{
          // Logic For file upload should go here 
          if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
-            $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+            $fileExtensionCover= pathinfo($cover_letter_file_main["name"], PATHINFO_EXTENSION);
+
+            $cover_letter_file = "coverLetter-".$timestamp . '.' .$fileExtensionCover;
+            
         
             MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
         }
@@ -313,7 +252,8 @@ if ($response) {
 
         if ($combinedFilename) {
             // then update or insert the file into the database 
-            UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName);
+            UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
+
         } else {
             $response = array("status"=>"error", "message"=>"Error moving combined PDF to designated folder");
             echo json_encode($response);

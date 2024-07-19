@@ -3,8 +3,9 @@ include "../backend/cors.php";
 include "../backend/db.php";
 include "../backend/checkifAuthorExists.php";
 include "../backend/updateRevision.php";
-include "../backend/addSubmissoinKeywords.php";
-include "../backend/addSuggestedReviewers.php";
+// include "../backend/addSubmissoinKeywords.php";
+// include "../backend/addSuggestedReviewers.php";
+// include "../backend/createCoAuthor.php";
 
 session_start();
 function MoveFile($outputFile, $designatedDirectory, $newFilename){
@@ -48,6 +49,37 @@ $supplementaryMaterialsFileName = "";
 $graphicAbstractFileName = "";
 $cover_letter_file_main = $_FILES["cover_letter"];
 
+if(isset($_POST["authors_prefix"])){
+    $authorsPrefix = $_POST["authors_prefix"];
+    $authors_firstname = $_POST["authors_first_name"];
+    $authors_lastname = $_POST["authors_last_name"];
+    $authors_other_name = $_POST["authors_other_name"];
+    $affiliation = $_POST["affiliation"];
+    $affiliation_country = $_POST["affiliation_country"];
+    $affiliation_city = $_POST["affiliation_city"];
+    $authorEmail = $_POST["email"];
+    $authors_orcid = $_POST["authors_orcid"];
+    }
+    $LoggedInauthorsPrefix = $_POST["loggedIn_authors_prefix"];
+$LoggedInauthors_firstname = $_POST["loggedIn_authors_first_name"];
+$LoggedInauthors_lastname = $_POST["loggedIn_authors_last_name"];
+$LoggedInauthors_other_name = $_POST["loggedIn_authors_other_name"];
+$LoggedInaffiliation = $_POST["loggedIn_affiliation"];
+$LoggedInaffiliation_country = $_POST["loggedIn_affiliation_country"];
+$LoggedInaffiliation_city = $_POST["loggedIn_affiliation_city"];
+$LoggedInauthorEmail = $_POST["loggedIn_author"];
+
+$loggedIn_authors_ORCID = $_POST["loggedIn_authors_ORCID"];
+
+    $suggestedReviewerEmail = $_POST["suggested_reviewer_email"];
+    $suggested_reviewer_fullname = $_POST["suggested_reviewer_fullname"];
+    $suggested_reviewer_affiliation = $_POST["suggested_reviewer_affiliation"];
+    $suggested_reviewer_country = $_POST["suggested_reviewer_country"];
+    $suggested_reviewer_city = $_POST["suggested_reviewer_city"];
+    
+    $keywords = $_POST["keyword"];
+    
+
 $abstract = $_POST["abstract"];
 $corresponding_author = $_POST["corresponding_author"];
 $Buffer = bin2hex(random_bytes(7));
@@ -71,134 +103,7 @@ if(isset($title)){
 
         $RevisionsId = $articleID.".R".$newRevisionsCount;
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // For Logged in Author
-        $LoggedInauthorsPrefix = $_POST["loggedIn_authors_prefix"];
-        $LoggedInauthors_firstname = $_POST["loggedIn_authors_first_name"];
-        $LoggedInauthors_lastname = $_POST["loggedIn_authors_last_name"];
-        $LoggedInauthors_other_name = $_POST["loggedIn_authors_other_name"];
-        $LoggedInaffiliation = $_POST["loggedIn_affiliation"];
-        $LoggedInaffiliation_country = $_POST["loggedIn_affiliation_country"];
-        $LoggedInaffiliation_city = $_POST["loggedIn_affiliation_city"];
-        $LoggedInauthorEmail = $_POST["loggedIn_author"];
 
-        $loggedIn_authors_ORCID = $_POST["loggedIn_authors_ORCID"];
-
-        $LoggedInauthorsFullname = "$LoggedInauthorsPrefix $LoggedInauthors_firstname $LoggedInauthors_lastname $LoggedInauthors_other_name";
-        try {
-            // Frist Check the the Author Exists 
-            $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ? AND `submission_id` = ?");
-            if(!$stmt){
-                throw new Exception("Failed to prepare statement: " . $con->error);
-
-            }
-            $stmt->bind_param("ss", $LoggedInauthorEmail, $articleID);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if($result->num_rows > 0){
-
-            }else{
-            $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`, `orcid_id`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?,?, ?, ?, ?, ?)");
-            if (!$stmt) {
-                throw new Exception("Failed to prepare statement: " . $con->error);
-            }
-            $stmt->bind_param("sssssss", $articleID, $LoggedInauthorsFullname, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
-            if (!$stmt->execute()) {
-                throw new Exception("Failed to execute statement Author: " . $stmt->error);
-            }
-        }
-        } catch (Exception $e) {
-            $response = array('status'=> 'error', 'message' => 'ErrorAuthor:'  . $e->getMessage());
-            echo json_encode($response);
-            exit;
-        }
-
-        // For other Authors 
-        if(isset($_POST["authors_prefix"])){
-        $authorsPrefix = $_POST["authors_prefix"];
-        $authors_firstname = $_POST["authors_first_name"];
-        $authors_lastname = $_POST["authors_last_name"];
-        $authors_other_name = $_POST["authors_other_name"];
-        $affiliation = $_POST["affiliation"];
-        $affiliation_country = $_POST["affiliation_country"];
-        $affiliation_city = $_POST["affiliation_city"];
-        $authorEmail = $_POST["email"];
-
-        $authors_orcid = $_POST["authors_orcid"];
-
-        for ($i = 0; $i < count($authorEmail); $i++){
-            $authorsFullname = "$authorsPrefix[$i] $authors_firstname[$i] $authors_lastname[$i] $authors_other_name[$i]";
-            try {
-                              // Frist Check the the Author Exists 
-            $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ? AND `submission_id` = ?");
-            if(!$stmt){
-                throw new Exception("Failed to prepare statement: " . $con->error);
-
-            }
-            $stmt->bind_param("ss",  $authorEmail[$i], $articleID);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if($result->num_rows > 0){
-
-            }else{
-                $stmt = $con->prepare("INSERT INTO `submission_authors` (`submission_id`, `authors_fullname`, `authors_email`,`orcid_id`, `affiliations`, `affiliation_country`, `affiliation_city`) VALUES(?, ?, ?, ?, ?, ?,?)");
-                if (!$stmt) {
-                    throw new Exception("Failed to prepare statement: " . $con->error);
-                }
-                $stmt->bind_param("sssssss", $articleID, $authorsFullname, $authorEmail[$i], $authors_orcid[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i]);
-                if (!$stmt->execute()) {
-                    throw new Exception("Failed to execute statement Author: " . $stmt->error);
-                }
-            }
-            } catch (Exception $e) {
-                $response = array('status'=> 'error', 'message' => 'ErrorAuthor:'  . $e->getMessage());
-                echo json_encode($response);
-                exit;
-            }
-        }
-    }
-            // ADD KEYWORDs 
-            if(isset($_POST["keyword"])){
-                $keywords = $_POST["keyword"];
-                for($i = 0; $i<count($keywords); $i++){
-                    try {
-                   if(AddSubmissionKeywords($articleID, $keywords[$i])){
-                    
-                   }else{
-                    throw new Exception("Could Not Add keyword: " . $keywords[$i]);
-    
-                   }
-                } catch (Exception $e) {
-                    $response = array('status' => 'error', 'message' => 'ErrorKeywords:' . $e->getMessage());
-                    echo json_encode($response);
-                    exit;
-                }
-                    
-                }
-            }
-            // Add Suggested REviewers
-            if(isset($_POST["suggested_reviewer_email"])){
-                $suggestedReviewerEmail = $_POST["suggested_reviewer_email"];
-                $suggested_reviewer_fullname = $_POST["suggested_reviewer_fullname"];
-                $suggested_reviewer_affiliation = $_POST["suggested_reviewer_affiliation"];
-                $suggested_reviewer_country = $_POST["suggested_reviewer_country"];
-                $suggested_reviewer_city = $_POST["suggested_reviewer_city"];
-                for($i =0; $i < count($suggestedReviewerEmail); $i++){
-                    try{
-                       if(AddSuggestedReviewers($articleID, $suggested_reviewer_fullname[$i], $suggested_reviewer_affiliation[$i], $suggested_reviewer_country[$i], $suggested_reviewer_city[$i], $suggestedReviewerEmail[$i])){
-    
-                       }else{
-                        throw new Exception("Could Not Add Suggested Reviewer: " . $keywords[$i]);
-        
-                       }
-                    } catch (Exception $e) {
-                        $response = array('status' => 'error', 'message' => 'ErrorSuggestedReviewer:' . $e->getMessage());
-                        echo json_encode($response);
-                        exit;
-                    }
-                }
-            }
-    }
 
 // if the revision status is set to save for later 
 if($revisionStatus === "saved_for_later"){
@@ -236,7 +141,7 @@ if($revisionStatus === "saved_for_later"){
             MoveFile("tables",  __DIR__."/uploadedFiles", $tablesFileName);
         }
         
-    UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName);
+    UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
 }else{
     // $fields = array(
     //     'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
@@ -312,7 +217,7 @@ if ($response) {
 
         if ($combinedFilename) {
             // Finally UploadDocuments after file has been combined
-            UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $$graphicAbstractFileName, $supplementaryMaterialsFileName);
+            UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $$graphicAbstractFileName, $supplementaryMaterialsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
         } else {
             $response = array("status"=>"error", "message"=>"Error moving combined PDF to designated folder");
             echo json_encode($response);

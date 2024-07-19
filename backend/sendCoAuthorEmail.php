@@ -22,6 +22,12 @@ $senderEmail = $_ENV["SENDGRID_EMAIL"];
 if($RecipientEmail){
 
 $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
+if (!$stmt) {
+    print("Error executing statement: " . $stmt->error);
+
+    // throw new Exception("Failed to prepare Author Submission statement: " . $stmt->error);
+
+}
 $stmt->bind_param("s", $RecipientEmail);
 $stmt->execute();
 $result = $stmt->get_result();

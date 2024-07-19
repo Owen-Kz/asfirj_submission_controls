@@ -27,7 +27,7 @@ function MoveFile($outputFile, $designatedDirectory, $newFilename)
     }
 
 }
-$combinedFilename  = ""
+$combinedFilename  = "";
 $title = $_POST["manuscript_full_title"];
 $type = $_POST["article_type"];
 $discipline = $_POST["discipline"];

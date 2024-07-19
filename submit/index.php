@@ -53,8 +53,8 @@ $corresponding_author = $_POST["corresponding_author"];
 $Buffer = bin2hex(random_bytes(7));
 $submissionsCount = "";
 
-if (isset($title)) {
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ? AND `status` != 'returned_for_revision'");
+if (isset($type)) {
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ? AND `status` != 'returned_for_revision' AND `status` != 'saved_for_later'");
     $stmt->bind_param("s", $title);
     if (!$stmt) {
         $response = array("status" => "error", "message" => $con->error);

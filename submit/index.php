@@ -24,7 +24,7 @@ function MoveFile($outputFile, $designatedDirectory, $newFilename)
         // print_r("File Uploaded");
     } else {
         echo "Could Not Upload File " . json_encode($_FILES[$outputFile]);
-    }F
+    }
 
 }
 $combinedFilename  = "";

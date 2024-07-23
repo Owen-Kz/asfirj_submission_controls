@@ -35,7 +35,12 @@ $supplementary_material = $_FILES["supplementary_materials"];
 $graphic_abstract = $_FILES["graphic_abstract"];
 $tables = $_FILES["tables"];
 $manuscriptId = $_POST["manuscript_id"];
+
+$trackedManuscriptFile  = $_POST["tracked_revisedmanuscript_file"];
+$trackedManuscriptFileName = "";
+
 $submissionStatus = $_POST["review_status"];
+
 $combinedFilename = "";
 
 $timestamp = date("d-m-Y")."_".$title."_";
@@ -166,9 +171,16 @@ if(isset($title)){
             MoveFile("tables",  __DIR__."/uploadedFiles", $tablesFileName);
         }
         
-        
+        // For tracked Manuscript File 
+        if(isset($trackedManuscriptFile) && $trackedManuscriptFile["size"] > 0 && isset($trackedManuscriptFile["tmp_name"])){
+            $fileExtensionTracked = pathinfo($trackedManuscriptFile["name"], PATHINFO_EXTENSION);
+
+            $trackedManuscriptFileName = "tracked_revised_manuscript-".$timestamp . '.' . $fileExtensionTracked;
+
+            MoveFile("tracked_revisedmanuscript",  __DIR__."/uploadedFiles", $trackedManuscriptFileName);
+        }
         // then update or insert the file into the database 
-        UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
+        UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName);
 
         
 
@@ -213,6 +225,12 @@ if(isset($title)){
            }else{
                $fields["tables"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
            }
+
+           if (isset($trackedManuscriptFile) && $trackedManuscriptFile["size"] > 0 && isset($trackedManuscriptFile["tmp_name"])) {
+            $fields["tracked_manuscript"] = new CURLFile($trackedManuscriptFile['tmp_name'], $trackedManuscriptFile['type'], $trackedManuscriptFile['name']);
+        }else{
+            $fields["tracked_manuscript"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
+        }
     // if the submission status is not save for later then send the files to nodeJs for processing and update the submission table 
     // Send files to Node.js server
     $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL
@@ -246,7 +264,7 @@ if ($response) {
 
         if ($combinedFilename) {
             // then update or insert the file into the database 
-            UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
+            UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName);
 
         } else {
             $response = array("status"=>"error", "message"=>"Error moving combined PDF to designated folder");

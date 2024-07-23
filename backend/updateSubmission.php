@@ -1,5 +1,5 @@
 <?php
-function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail,  $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city){
+function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail,  $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName){
     include "../backend/db.php";
     include "../backend/addSubmissoinKeywords.php";
     include "../backend/addSuggestedReviewers.php";
@@ -16,22 +16,22 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     if($result->num_rows > 0){
     
           // UPdaet the Status 
-          $stmt = $con->prepare("UPDATE `submissions` SET `article_type` = ?, `revision_id`=?, `discipline` = ?, `title` = ? , `manuscript_file` = ?,`cover_letter_file` = ?, `abstract` =?, `corresponding_authors_email` = ?, `tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?, `status` = ? WHERE `article_id` = ?");
+          $stmt = $con->prepare("UPDATE `submissions` SET `article_type` = ?, `revision_id`=?, `discipline` = ?, `title` = ? , `manuscript_file` = ?,`cover_letter_file` = ?, `abstract` =?, `corresponding_authors_email` = ?, `tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?, `status` = ?, `tracked_manuscript_file` =? WHERE `article_id` = ?");
           if(!$stmt){
               echo json_encode(array("status" => "error", "message" => $stmt->error));
           }
-          $stmt->bind_param("ssssssssssssss",$type, $RevisionsId, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $submissionStatus, $articleID);
+          $stmt->bind_param("sssssssssssssss",$type, $RevisionsId, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $submissionStatus,$trackedManuscriptFileName, $articleID);
           $stmt->execute();
           $response = array("status"=>"success", "message"=>"Submission Successfully $submissionStatus");
           echo json_encode($response);
     }else{
         // Create a NEw Submission if the submission does not exist 
-        $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`, `cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `revision_id`, `status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`, `cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `revision_id`, `status`, `tracked_manuscript_file`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         if(!$stmt){
             echo $stmt->error;
             exit;
         }
-        $stmt->bind_param("ssssssssssssss", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $RevisionsId, $submissionStatus);
+        $stmt->bind_param("sssssssssssssss", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $RevisionsId, $submissionStatus, $trackedManuscriptFileName);
         $stmt->execute();
         $response = array("status"=>"success", "message"=>"Submission Successfully $submissionStatus");
           echo json_encode($response);

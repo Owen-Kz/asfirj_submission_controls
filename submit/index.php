@@ -44,7 +44,7 @@ $supplementaryMaterialsFileName = "";
 $graphicAbstractFileName = "";
 $cover_letter_file_main = $_FILES["cover_letter"];
 
-$trackedManuscriptFile  = $_POST["tracked_revisedmanuscript_file"];
+$trackedManuscriptFile  = $_FILES["tracked_revisedmanuscript_file"];
 $trackedManuscriptFileName = "";
 
 
@@ -132,7 +132,7 @@ if (isset($type)) {
     } else if ($countSub > 1000 && $countSub < 10000) {
         $submissionsCount = "0" . $row["totalSubmissions"] + 1;
     } else {
-        $submissionsCount = $row["totalSubmissions"] + 1;
+        $submissionsCount = "0000".$row["totalSubmissions"] + 1;
 
     }
 

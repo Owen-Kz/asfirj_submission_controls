@@ -36,7 +36,7 @@ $graphic_abstract = $_FILES["graphic_abstract"];
 $tables = $_FILES["tables"];
 $manuscriptId = $_POST["manuscript_id"];
 
-$trackedManuscriptFile  = $_POST["tracked_revisedmanuscript_file"];
+$trackedManuscriptFile  = $_FILES["tracked_revisedmanuscript_file"];
 $trackedManuscriptFileName = "";
 
 $submissionStatus = $_POST["review_status"];
@@ -102,6 +102,7 @@ $Buffer = bin2hex(random_bytes(7));
 $articleID = $manuscriptId;
 
 if(isset($title)){
+    
     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
     $stmt->bind_param("ss", $articleID, $corresponding_author);
     if(!$stmt){

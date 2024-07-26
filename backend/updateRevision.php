@@ -12,7 +12,7 @@ function UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title
         }
         $stmt->bind_param("ss",$revisionStatus, $articleID);
         $stmt->execute();
-        $response = array("status"=>"success", "message"=>"Submission Successful");
+        $response = array("status"=>"success", "message"=>"Submission Successful $revisionStatus");
         echo json_encode($response);
     } else {
         $response = array("status"=>"error", "message"=>"Could Not Complete Submission");

@@ -14,7 +14,23 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     $stmt->execute();
     $result = $stmt->get_result();
     if($result->num_rows > 0){
+        // $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
+        // $stmt->bind_param("ss", $articleID, $corresponding_author);
+        // if(!$stmt){
+        //     $response = array("status"=>"error", "message" => $stmt->error);
+        //     echo json_encode($response);
+        //     exit;
+        // }
+        // $stmt->execute();
+        // $result = $stmt->get_result();
+        // $count = mysqli_num_rows($result);
+        // if($count > 0){
+        //     $row = $result->fetch_assoc();
+        //     $revisionsCount = $row["revisions_count"];
+        //     $newRevisionsCount = (int) $revisionsCount + 1;
     
+        //     $RevisionsId = $articleID;
+        // }
           // UPdaet the Status 
           $stmt = $con->prepare("UPDATE `submissions` SET `article_type` = ?, `revision_id`=?, `discipline` = ?, `title` = ? , `manuscript_file` = ?,`cover_letter_file` = ?, `abstract` =?, `corresponding_authors_email` = ?, `tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?, `status` = ?, `tracked_manuscript_file` =? WHERE `article_id` = ?");
           if(!$stmt){

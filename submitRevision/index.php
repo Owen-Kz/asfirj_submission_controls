@@ -65,7 +65,7 @@ $manuscriptId = $_POST["manuscript_id"];
 $revisionStatus = $_POST["review_status"];
 $combinedFilename = "";
 
-$trackedManuscriptFile  = $_POST["tracked_revisedmanuscript_file"];
+$trackedManuscriptFile  = $_FILES["tracked_revisedmanuscript_file"];
 $trackedManuscriptFileName = "";
 
 $cover_letter = $_FILES["cover_letter"];

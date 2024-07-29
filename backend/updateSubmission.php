@@ -32,12 +32,12 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
         //     $RevisionsId = $articleID;
         // }
           // UPdaet the Status 
-          $stmt = $con->prepare("UPDATE `submissions` SET `article_type` = ?, `revision_id`=?, `discipline` = ?, `title` = ? , `manuscript_file` = ?,`cover_letter_file` = ?, `abstract` =?, `corresponding_authors_email` = ?, `tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?, `status` = ?, `tracked_manuscript_file` =? WHERE `article_id` = ?");
-          if(!$stmt){
-              echo json_encode(array("status" => "error", "message" => $stmt->error));
+          $stmtIST = $con->prepare("UPDATE `submissions` SET `article_type` = ?, `revision_id`=?, `discipline` = ?, `title` = ? , `manuscript_file` = ?,`cover_letter_file` = ?, `abstract` =?, `corresponding_authors_email` = ?, `tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?, `status` = ?, `tracked_manuscript_file` =? WHERE `article_id` = ?");
+          if(!$stmtIST){
+              echo json_encode(array("status" => "error", "message" => $con->error));
           }
-          $stmt->bind_param("sssssssssssssss",$type, $RevisionsId, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $submissionStatus,$trackedManuscriptFileName, $articleID);
-          $stmt->execute();
+          $stmtIST->bind_param("sssssssssssssss",$type, $RevisionsId, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $submissionStatus,$trackedManuscriptFileName, $articleID);
+          $stmtIST->execute();
           $response = array("status"=>"success", "message"=>"Submission Successfully $submissionStatus");
           echo json_encode($response);
     }else{

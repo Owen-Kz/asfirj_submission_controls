@@ -16,7 +16,7 @@ if(isset($userId)){
 
         while ($row = $result->fetch_assoc()) {
             $articleId = $row["submission_id"];
-            $stmt = $con->prepare("SELECT * FROM `submissions` WHERE md5(`corresponding_authors_email`) != ? AND `article_id` = ?");
+            $stmt = $con->prepare("SELECT * FROM `submissions` WHERE md5(`corresponding_authors_email`) != ? AND `article_id` = ? AND `status` != 'saved_for_later'");
             
             if (!$stmt) {
                 $response = array("error" => $con->error, "articles" => []);

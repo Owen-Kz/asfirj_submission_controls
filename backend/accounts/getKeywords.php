@@ -14,8 +14,8 @@ if($data){
         $keywords = array();
         while($row=$result->fetch_assoc()){
             $keywords[] = $row;
-
         }
+        
         $response = array("success"=>"Keywords Available", "keywords"=>$keywords);
         echo json_encode($response);
     }else{

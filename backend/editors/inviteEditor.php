@@ -9,6 +9,8 @@ $article_id = $_POST["articleId"];
 $reviewerEmail = $_POST["reviewerEmail"];
 $subject = $_POST["subject"];
 $message = $_POST["message"];
+$invitedFor = "To Edit";
+
 
 if(isset($editor)){
     $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`email`) = ? AND (`editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?)");
@@ -36,8 +38,8 @@ if(isset($editor)){
         // echo json_encode($response);
 
         // Save the Email TO The database 
-        $stmt = $con->prepare("INSERT INTO `sent_emails` (`article_id`,`subject`, `recipient`,`sender`, `body`) VALUES (?,?,?,?,?)");
-        $stmt->bind_param('sssss',$article_id, $subject, $reviewerEmail, $editor_email, $message);
+        $stmt = $con->prepare("INSERT INTO `sent_emails` (`article_id`,`subject`, `recipient`,`sender`, `body`, `email_for`) VALUES (?,?,?,?,?,?)");
+        $stmt->bind_param('ssssss',$article_id, $subject, $reviewerEmail, $editor_email, $message, $invitedFor);
         $stmt->execute();
 
         // Send the email notification to reviewer
@@ -54,7 +56,6 @@ if(isset($editor)){
             $expiryDate = date('Y-m-d', $oneWeekLater);
            
             // Add teh Entry to the invitations list 
-            $invitedFor = "To Edit";
             $stmt = $con->prepare("INSERT INTO `invitations`(`invited_user`, `invitation_link`, `invitation_expiry_date`, `invited_for`, `invited_user_name`) VALUES (?,?,?,?,?)");
             $stmt->bind_param("sssss", $reviewerEmail, $article_id, $expiryDate, $invitedFor, $editor_email);
             if(!$stmt){

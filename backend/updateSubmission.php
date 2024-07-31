@@ -4,6 +4,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     include "../backend/addSubmissoinKeywords.php";
     include "../backend/addSuggestedReviewers.php";
     include "../backend/createCoAuthor.php";
+    require_once "../backend/sendNewSubmissionEmail.php";
     // GEt the Main submission Id 
     $mainSubmissionId = "";
 
@@ -24,6 +25,10 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
         $mainSubmissionId = $articleID;
     }
 
+    // Send NEw submission Email
+    if($submissionStatus === "submitted"){
+    SendNewSubmissionEmail($corresponding_author, $title,  $mainSubmissionId );
+    }
     // Frist check if the submission exist and is ready has been saved earlier 
 
     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ?  AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");

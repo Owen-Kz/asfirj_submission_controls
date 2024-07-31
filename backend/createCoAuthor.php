@@ -2,7 +2,7 @@
 
 function CreateCoAuthor($prefix, $firstname, $lastname, $othername, $email, $orcid, $affiliations, $affiliationCountry, $affiliationCity){
     include "../backend/db.php";
-    include "../backend/sendCoAuthorEmail.php";
+    require_once "../backend/sendCoAuthorEmail.php";
     $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
     if (!$stmt) {
         print("Error executing statement: " . $stmt->error);

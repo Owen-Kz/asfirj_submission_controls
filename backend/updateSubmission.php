@@ -4,7 +4,9 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     include "../backend/addSubmissoinKeywords.php";
     include "../backend/addSuggestedReviewers.php";
     include "../backend/createCoAuthor.php";
-    // Frist check if the submission exist and is ready has been saved earlier 
+    // GEt the Main submission Id 
+    $mainSubmissionId = "";
+
     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ?  AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
     if(!$stmt){
         echo $stmt->error;
@@ -14,31 +16,38 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     $stmt->execute();
     $result = $stmt->get_result();
     if($result->num_rows > 0){
-        // $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
-        // $stmt->bind_param("ss", $articleID, $corresponding_author);
-        // if(!$stmt){
-        //     $response = array("status"=>"error", "message" => $stmt->error);
-        //     echo json_encode($response);
-        //     exit;
-        // }
-        // $stmt->execute();
-        // $result = $stmt->get_result();
-        // $count = mysqli_num_rows($result);
-        // if($count > 0){
-        //     $row = $result->fetch_assoc();
-        //     $revisionsCount = $row["revisions_count"];
-        //     $newRevisionsCount = (int) $revisionsCount + 1;
-    
-        //     $RevisionsId = $articleID;
-        // }
+        $row = $result->fetch_assoc();
+
+        $mainManuscriptId = $row["article_id"];
+        $mainSubmissionId = $mainManuscriptId;
+    }else{
+        $mainSubmissionId = $articleID;
+    }
+
+    // Frist check if the submission exist and is ready has been saved earlier 
+
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ?  AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
+    if(!$stmt){
+        echo $stmt->error;
+        exit;
+    }
+    $stmt->bind_param("ss", $title, $corresponding_author);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result->num_rows > 0){
+        $row = $result->fetch_assoc();
+
+        $mainManuscriptId = $row["article_id"];
+ 
+ 
           // UPdaet the Status 
           $stmtIST = $con->prepare("UPDATE `submissions` SET `article_type` = ?, `revision_id`=?, `discipline` = ?, `title` = ? , `manuscript_file` = ?,`cover_letter_file` = ?, `abstract` =?, `corresponding_authors_email` = ?, `tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?, `status` = ?, `tracked_manuscript_file` =? WHERE `article_id` = ?");
           if(!$stmtIST){
-              echo json_encode(array("status" => "error", "message" => $con->error));
+              echo json_encode(array("status" => "error", "message" => $stmtIST->error));
           }
-          $stmtIST->bind_param("sssssssssssssss",$type, $RevisionsId, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $submissionStatus,$trackedManuscriptFileName, $articleID);
+          $stmtIST->bind_param("sssssssssssssss",$type, $mainSubmissionId, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $submissionStatus,$trackedManuscriptFileName, $mainManuscriptId);
           $stmtIST->execute();
-          $response = array("status"=>"success", "message"=>"Submission Successfully $submissionStatus");
+          $response = array("status"=>"success", "message"=>"Submission Successfully $submissionStatus $abstract");
           echo json_encode($response);
     }else{
         // Create a NEw Submission if the submission does not exist 
@@ -47,12 +56,13 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
             echo $stmt->error;
             exit;
         }
-        $stmt->bind_param("sssssssssssssss", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $RevisionsId, $submissionStatus, $trackedManuscriptFileName);
+        $stmt->bind_param("sssssssssssssss", $type, $discipline, $title, $combinedFilename, $cover_letter_file, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $mainSubmissionId, $submissionStatus, $trackedManuscriptFileName);
         $stmt->execute();
         $response = array("status"=>"success", "message"=>"Submission Successfully $submissionStatus");
           echo json_encode($response);
     }
 
+    
           // For other Authors 
           if (count($authorEmail) > 0) {
       
@@ -73,7 +83,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
                         throw new Exception("Failed to prepare Author Submission statement: " . $stmt->error);
 
                     }
-                    $stmt->bind_param("ss", $authorEmail[$i], $articleID);
+                    $stmt->bind_param("ss", $authorEmail[$i], $mainSubmissionId);
                     $stmt->execute();
                     $result = $stmt->get_result();
                     if ($result->num_rows > 0) {
@@ -85,7 +95,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
 
                             throw new Exception("Failed to prepare  Author Insert statement: " . $stmt->error);
                         }
-                        $stmt->bind_param("ssssssss", $articleID, $authorsFullname, $authorEmail[$i], $authors_orcid[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i], $membership_id[$i]);
+                        $stmt->bind_param("ssssssss", $mainSubmissionId, $authorsFullname, $authorEmail[$i], $authors_orcid[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i], $membership_id[$i]);
                         if (!$stmt->execute()) {
                             print("Error executing statement: " . $stmt->error);
 
@@ -109,7 +119,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
             for($i = 0; $i<count($keywords); $i++){
                 try {
                     if($keywords[$i] != ""){
-               if(AddSubmissionKeywords($articleID, $keywords[$i])){
+               if(AddSubmissionKeywords($mainSubmissionId, $keywords[$i])){
                 
                }else{
                 throw new Exception("Could Not Add keyword: " . $keywords[$i]);
@@ -134,7 +144,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
             for($i =0; $i < count($suggestedReviewerEmail); $i++){
                 try{
                     if($suggestedReviewerEmail[$i] != ""){
-                   if(AddSuggestedReviewers($articleID, $suggested_reviewer_fullname[$i], $suggested_reviewer_affiliation[$i], $suggested_reviewer_country[$i], $suggested_reviewer_city[$i], $suggestedReviewerEmail[$i])){
+                   if(AddSuggestedReviewers($mainSubmissionId, $suggested_reviewer_fullname[$i], $suggested_reviewer_affiliation[$i], $suggested_reviewer_country[$i], $suggested_reviewer_city[$i], $suggestedReviewerEmail[$i])){
 
                    }else{
                     throw new Exception("Could Not Add Suggested Reviewer: " . $suggestedReviewerEmail[$i]);
@@ -162,7 +172,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
                        throw new Exception("Failed to prepare statement: " . $stmt->error);
        
                    }
-                   $stmt->bind_param("ss", $LoggedInauthorEmail, $RevisionsId);
+                   $stmt->bind_param("ss", $LoggedInauthorEmail, $mainSubmissionId);
                    $stmt->execute();
                    $result = $stmt->get_result();
                    if ($result->num_rows > 0) {
@@ -172,7 +182,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
                        if (!$stmt) {
                            throw new Exception("Failed to prepare statement: " . $stmt->error);
                        }
-                       $stmt->bind_param("sssssss", $RevisionsId, $LoggedInauthorsFullname, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
+                       $stmt->bind_param("sssssss", $mainSubmissionId, $LoggedInauthorsFullname, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city);
                        if (!$stmt->execute()) {
                            throw new Exception("Failed to execute statement Author: " . $stmt->error);
                        }

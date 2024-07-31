@@ -80,7 +80,7 @@ $keywords = $_POST["keyword"];
 
 $abstract = $_POST["abstract"];
 $corresponding_author = $_POST["corresponding_author"];
-$Buffer = bin2hex(random_bytes(7));
+// $Buffer = bin2hex(random_bytes(7));
 $submissionsCount = "";
 
 if (isset($type)) {
@@ -100,7 +100,7 @@ if (isset($type)) {
         exit;
     }
     // Select Count to add to ID 
-    $stmt = $con->prepare("SELECT COUNT(*) AS `totalSubmissions` FROM `submissions` WHERE 1");
+    $stmt = $con->prepare("SELECT id FROM `submissions` WHERE id = (SELECT MAX(id) FROM `submissions`)");
     if (!$stmt) {
         $response = array("status" => "error", "message" => $con->error);
         echo json_encode($response);
@@ -111,23 +111,24 @@ if (isset($type)) {
     // $count = mysqli_num_rows($result);
 // if($count > 0){
     $row = $result->fetch_assoc();
-    $countSub = $row["totalSubmissions"] + 1;
+    $countSub = $row["id"] + 1;
     if ($countSub < 10) {
-        $submissionsCount = "0000" . $row["totalSubmissions"] + 1;
+        $submissionsCount = "0000" . $row["id"] + 1;
     } else if ($countSub > 10 && $countSub < 100) {
-        $submissionsCount = "000" . $row["totalSubmissions"] + 1;
+        $submissionsCount = "000" . $row["id"] + 1;
     } else if ($countSub > 100 && $countSub < 1000) {
-        $submissionsCount = "00" . $row["totalSubmissions"] + 1;
+        $submissionsCount = "00" . $row["id"] + 1;
     } else if ($countSub > 1000 && $countSub < 10000) {
-        $submissionsCount = "0" . $row["totalSubmissions"] + 1;
+        $submissionsCount = "0" . $row["id"] + 1;
     } else {
-        $submissionsCount = "0000".$row["totalSubmissions"] + 1;
+        $submissionsCount = "0000".$row["id"] + 1;
 
     }
 
     // }
     $articleID = "ASFIRJ-" . date("Y") . "-" . $submissionsCount;
     $RevisionsId = $articleID;
+
     $revisionsCount = 0;
     // End Select Count 
 

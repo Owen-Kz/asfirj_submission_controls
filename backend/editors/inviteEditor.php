@@ -30,6 +30,28 @@ if(isset($editor)){
     if(mysqli_num_rows($result) > 0){
         $row = mysqli_fetch_array($result);
         $editor_email = $row["email"];
+        // Check if the invited Editor is an author on the papaer 
+        $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ? AND `submission_id` = ?");
+        $stmt->bind_param("ss", $reviewerEmail,$article_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if($result->num_rows > 0){
+            $response = array("status"=>"error", "message" => "The Editor You tried to invite is an author on this article");
+        echo json_encode($response);
+        exit;
+        }
+        // Ehck if the user is trying to invite themselves 
+        //   $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`email`)  = ?");
+        //   $stmt->bind_param("s", $reviewerEmail);
+        //   $stmt->execute();
+        //   $result = $stmt->get_result();
+        //   if($result->num_rows > 0){
+        //       $response = array("status"=>"error", "message" => "You Cannot Invite Yourself to edit this article");
+        //   echo json_encode($response);
+        //   exit;
+        //   }else{
+        //     echo "$reviewerEmail"
+        //   }
 
         $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'submitted_for_edit' WHERE `revision_id` = ?");        
         $stmt->bind_param("s", $article_id);
@@ -72,10 +94,10 @@ if(isset($editor)){
             exit;
         }
         
-        }else{
-            $response = array("status"=>"error", "message" => $stmt->error);
-            echo json_encode($response);
-        }
+    }else{
+        $response = array("status"=>"error", "message" => "Could Not Send Email at the moment. Please Try Again or Check Your Connection");
+        echo json_encode($response);
+    }
     }else{
         $response = array("status"=>"error", "message" => "Could Not Sent Mail");
         echo json_encode($response);

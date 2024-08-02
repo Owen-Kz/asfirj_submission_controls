@@ -2,7 +2,7 @@
 include "../cors.php";
 include "../db.php";
 
-$data = json_decode(file_get_contents("php://input"), truw);
+$data = json_decode(file_get_contents("php://input"), true);
 $editor_id = $data["editor"];
 
 $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`id`) = ?");

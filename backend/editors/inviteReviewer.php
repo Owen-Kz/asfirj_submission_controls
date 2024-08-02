@@ -29,9 +29,20 @@ if(isset($editor)){
         $row = mysqli_fetch_array($result);
         $editor_email = $row["email"];
 
+        // Check if the invited Reviewer is an author on the papaer 
+        $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ? AND `submission_id` = ?");
+        $stmt->bind_param("ss", $reviewerEmail,$article_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if($result->num_rows > 0){
+            $response = array("status"=>"error", "message" => "The Reviewer You tried to invite is an author on this article");
+        echo json_encode($response);
+        exit;
+        }
         // check if the review already exists
-        $stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` =? AND `reviewer_email` =? AND (`status` = 'submitted_for_review' OR `status` = 'review_invitation_accepted' OR `status` = 'review_submitted'");
-        $stmt->bind_param("ss", $ArticleId, $reviewerEmail);
+        $stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` =? AND `reviewer_email` = ? AND (`status` = 'submitted_for_review' OR `status` = 'review_invitation_accepted' OR `status` = 'review_submitted')");
+        $stmt->bind_param("ss",$article_id, $reviewerEmail);
+        $stmt->execute();
         $result = $stmt->get_result();
         if($result->num_rows > 0){
             $response = array("status"=>"success", "message" => "An Invitation was previously sent to $reviewerEmail");
@@ -73,8 +84,8 @@ if(isset($editor)){
     
         
         }else{
-            $response = array("status"=>"error", "message" => $stmt->error);
-            print_r($response);
+            $response = array("status"=>"error", "message" => "Could Not Send Email at the moment. Please Try Again or Check Your Connection");
+            echo json_encode($response);
         }
     
     }else{

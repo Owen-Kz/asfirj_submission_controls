@@ -7,7 +7,7 @@ $userId = $_GET["u_id"];
 
 if(isset($userId)){
     if(isAdminAccount($userId)){
-        $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submissions` WHERE `status` != 'saved_for_later' AND `status` != 'revision_saved' AND `status` != 'returned'");
+        $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submissions` WHERE `status` = 'submitted' OR `status` = 'correction_submitted'");
         // $stmt->bind_param("s", $userId);
         $stmt->execute();
         $result = $stmt->get_result();

@@ -4,7 +4,7 @@ include "../backend/db.php";
 
 function UpdateSubmissionsTable($article_id, $reviewStatus){
     include "../backend/db.php";
-    $stmt = $con->prepare("UPDATE `submissions` SET `status` = ? WHERE `article_id` = ?");
+    $stmt = $con->prepare("UPDATE `submissions` SET `status` = ? WHERE `revision_id` = ?");
     if(!!$stmt){
         // print_r($stmt->error);
     }

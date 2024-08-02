@@ -29,7 +29,7 @@ if(isset($editor)){
         $row = mysqli_fetch_array($result);
         $editor_email = $row["email"];
 
-        $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'returned' WHERE `revision_id` = ?");        
+        $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'returned_for_correction' WHERE `revision_id` = ?");        
         $stmt->bind_param("s", $article_id);
         if($stmt->execute()){
         $response = array("status" => "success", "message"=>"Review Process Initiated");

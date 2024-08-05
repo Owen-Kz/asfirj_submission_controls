@@ -1,7 +1,7 @@
 <?php 
-include "../../cors.php";
-include "../../db.php";
-include "../isAdministrator.php";
+include __DIR__."../../cors.php";
+include __DIR__."../../db.php";
+include __DIR__."../isAdministrator.php";
 
 $adminId = $_GET["a_id"];
 if(isset($adminId)){

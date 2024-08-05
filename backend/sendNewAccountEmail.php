@@ -1,86 +1,80 @@
 <?php
 
-function SendAccountEmail($RecipientEmail, $password){
+function SendAccountEmail($RecipientEmail, $password) {
+    require_once __DIR__ . '/../vendor/autoload.php';
 
-require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
-// Comment out the above line if not using Composer
-// require("<PATH TO>/sendgrid-php.php");
-// If not using Composer, uncomment the above line and
-// download sendgrid-php.zip from the latest release here,
-// replacing <PATH TO> with the path to the sendgrid-php.php file,
-// which is included in the download:
-// https://github.com/sendgrid/sendgrid-php/releases
-// Inmport Environment Variables
-include __DIR__ .'/exportENV.php';
-include __DIR__ .'/db.php';
+    // Import Environment Variables
+    include __DIR__ . '/exportENV.php';
+    include __DIR__ . '/db.php';
 
-$api = $_ENV['SENDGRID_API_KEY'];
-$senderEmail = $_ENV["SENDGRID_EMAIL"];
+    $apiKey = $_ENV['BREVO_API_KEY'];
+    $senderEmail = $_ENV["BREVO_EMAIL"];
 
+    if ($RecipientEmail) {
+        $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
+        $stmt->bind_param("s", $RecipientEmail);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $count = mysqli_num_rows($result);
 
+        if ($count > 0) {
+            $row = mysqli_fetch_array($result);
+            $prefix = $row["prefix"];
+            $RecipientName = $row["firstname"];
+            $encryptedButton = md5($RecipientEmail);
 
+            $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
+            $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
+                new \GuzzleHttp\Client(), 
+                $config
+            );
 
-if($RecipientEmail){
+            $email = new \Brevo\Client\Model\SendSmtpEmail();
+            
+            // Set sender
+            $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
+            $sender->setEmail($senderEmail);
+            $sender->setName('ASFIRJ');
+            $email->setSender($sender);
+            
+            // Set recipient
+            $email->setTo([['email' => $RecipientEmail, 'name' => $RecipientName]]);
+            $email->setSubject("ASFIRJ Account Created");
 
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
-$stmt->bind_param("s", $RecipientEmail);
-$stmt->execute();
-$result = $stmt->get_result();
-$run_query = $result; 
-$count = mysqli_num_rows($run_query);
+            $htmlContent = <<<EOT
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>Email Content</title>
+            </head>
+            <body>
+                <h2> Hi, $prefix $RecipientName</h2>
+                <p> A submission affiliated to you was made on the ASFIRJ platform </p>
+                <p>Please <a href="https://authors.asfirj.org/validate?a=$encryptedButton">click here</a> to login and view this submission. </p>
+                <p>Or paste this <a href="https://authors.asfirj.org/validate?a=$encryptedButton">link</a> in your browser</p>
+                <p>Your Password is <h1>$password</h1></p>
+                <footer>
+                    <p>African Science Research Journal</p>
+                </footer>
+            </body>
+            </html>
+            EOT;
 
+            $email->setHtmlContent($htmlContent);
 
-//if user record is available in database then $count will be equal to 1
-if($count > 0){
-    $row = mysqli_fetch_array($run_query);
-    $email = $row["email"];
-    $prefix = $row["prefix"];
-    $RecipientName = $row["firstname"];
+            try {
+                $response = $apiInstance->sendTransacEmail($email);
+                $response = array('status' => 'success', 'message' => 'Email sent');
+            } catch (\Brevo\Client\ApiException $e) {
+                $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage());
+            }
+        } else {
+            $response = array('status' => 'error', 'message' => 'User does not exist on Our servers');
+        }
+    } else {
+        $response = array('status' => 'error', 'message' => 'Invalid Request');
+    }
 
-    $encryptedButton = md5($RecipientEmail);
-
-$sendgrid = new \SendGrid($api);
-try {
- 
-    // print $response->statusCode() . "\n";
-    // print_r($response->headers());
-    // print $response->body() . "\n";
-    $subject = "ASFIRJ Account Created";
-    $message = "<h2> Hi, $prefix. $RecipientName<h2>
-    <p> A submission affiliated to you was made on the ASFIRJ platform </p>
-    <p>please <a href=https://authors.asfirj.org/validate?a=$encryptedButton>click here</a> to login and view this submission. </p>
-    <p>Or paste this <a href=https://authors.asfirj.org/validate?a=$encryptedButton>https://authors.asfirj.org/validate?a=$encryptedButton</a> link in your browser</p>
-    <p Your Password is <h1>$password</h1></p>
-    <p><center><h6>African Science Research Journal</h6></p>
-    ";
-
-        $email = new \SendGrid\Mail\Mail();
-        $email->setFrom($senderEmail, "ASFIRJ");
-        $email->setSubject($subject);
-        $email->addTo($RecipientEmail, $RecipientName);
-        $email->addContent(
-            "text/html",$message
-        );
-     
-        $response = $sendgrid->send($email);
-    
-        $response = array('status' => 'success', 'message' => 'Email sent', 'email' => $encryptedButton);
-        // print $response;
-
-    
-} catch (Exception $e) {
-    $response = array('status' => 'Internal Error', 'message' => 'Caught exception: '. $e->getMessage() ."\n");
-            // print $response;
-
-}
-}else{
-    $response = array('status'=> 'error', 'message' => 'User does not exist on Our servers');
-            // print $response;
-
-}
-}else{
-    $response = array('status' => 'error', 'message' => 'Invalid Request');
-            // print $response;
-
-}
+    print_r($response);
 }

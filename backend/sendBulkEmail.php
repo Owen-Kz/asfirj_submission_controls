@@ -3,25 +3,28 @@
 function convertToHTML($contentArray) {
     $html = '';
     $listOpen = false;
+    $listType = '';
 
     foreach ($contentArray as $item) {
         if (isset($item['attributes']['list'])) {
-            if ($item['attributes']['list'] === 'ordered') {
+            $currentListType = $item['attributes']['list'];
+
+            if ($currentListType === 'ordered' || $currentListType === 'bullet') {
                 if (!$listOpen) {
-                    $html .= '<ol>';
+                    $html .= ($currentListType === 'ordered') ? '<ol>' : '<ul>';
                     $listOpen = true;
+                    $listType = $currentListType;
+                } elseif ($listType !== $currentListType) {
+                    $html .= ($listType === 'ordered') ? '</ol>' : '</ul>';
+                    $html .= ($currentListType === 'ordered') ? '<ol>' : '<ul>';
+                    $listType = $currentListType;
                 }
-                $html .= '<li>' . htmlspecialchars($item['insert'], ENT_QUOTES, 'UTF-8') . '</li>';
-            } elseif ($item['attributes']['list'] === 'bullet') {
-                if (!$listOpen) {
-                    $html .= '<ul>';
-                    $listOpen = true;
-                }
+
                 $html .= '<li>' . htmlspecialchars($item['insert'], ENT_QUOTES, 'UTF-8') . '</li>';
             }
         } else {
             if ($listOpen) {
-                $html .= (isset($item['attributes']['list']) && $item['attributes']['list'] === 'ordered') ? '</ol>' : '</ul>';
+                $html .= ($listType === 'ordered') ? '</ol>' : '</ul>';
                 $listOpen = false;
             }
 
@@ -52,67 +55,79 @@ function convertToHTML($contentArray) {
     }
 
     if ($listOpen) {
-        $html .= (isset($item['attributes']['list']) && $item['attributes']['list'] === 'ordered') ? '</ol>' : '</ul>';
+        $html .= ($listType === 'ordered') ? '</ol>' : '</ul>';
     }
 
     return $html;
 }
-function SendBulkEmail($RecipientEmail, $subject, $message, $editor_email, $article_id){
-    require_once __DIR__ .'/../vendor/autoload.php';
-    require __DIR__. "/../backend/exportENV.php";
-    include __DIR__."/../backend/db.php";
 
-    $api = $_ENV['SENDGRID_API_KEY'];
-    $senderEmail = $_ENV["SENDGRID_EMAIL"];
+function SendBulkEmail($RecipientEmail, $subject, $message, $editor_email, $article_id) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+    require __DIR__ . "/../backend/exportENV.php";
+    include __DIR__ . "/../backend/db.php";
+
+    $apiKey = $_ENV['BREVO_API_KEY'];
+    $senderEmail = $_ENV["BREVO_EMAIL"];
     $currentYear = date('Y');  // Get the current year
 
     if ($RecipientEmail) {
         $encryptedButton = md5($RecipientEmail);
 
-        $sendgrid = new \SendGrid($api);
+        // Configure the Brevo client
+        $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
+        $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
+            new \GuzzleHttp\Client(), $config
+        );
 
         try {
             $contentArray = json_decode($message, true);
-
-
             $htmlContent = convertToHTML($contentArray);
             $emailContent = <<<EOT
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Email Content</title>
-        </head>
-        <body>
-            <div>
-                $htmlContent
-            </div>
-            <footer>
-                <p>ASFI Research Journal (c) $currentYear</p>
-            </footer>
-        </body>
-        </html>
-        EOT;
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>Email Content</title>
+            </head>
+            <body>
+                <div>
+                    $htmlContent
+                </div>
+                <footer>
+                    <p>ASFI Research Journal (c) $currentYear</p>
+                </footer>
+            </body>
+            </html>
+            EOT;
 
-            $email = new \SendGrid\Mail\Mail();
-            $email->setFrom($senderEmail, "ASFIRJ");
+            $email = new \Brevo\Client\Model\SendSmtpEmail();
+            $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
+            $sender->setEmail($senderEmail);
+            $sender->setName("ASFIRJ");
+
+            $recipient = new \Brevo\Client\Model\SendSmtpEmailTo();
+            $recipient->setEmail($RecipientEmail);
+            // $recipient->setName($RecipientName);
+
+            $email->setSender($sender);
+            $email->setTo([$recipient]);
             $email->setSubject($subject);
-            $email->addTo($RecipientEmail);
-            $email->addContent("text/html", $emailContent);
+            $email->setHtmlContent($emailContent);
 
-            $response = $sendgrid->send($email);
+            $response = $apiInstance->sendTransacEmail($email);
 
             $stmt = $con->prepare("UPDATE `sent_emails` SET `status` = 'Delivered' WHERE `article_id` = ? AND `sender` = ? AND `subject` = ?");
             $stmt->bind_param("sss", $article_id, $editor_email, $subject);
             $stmt->execute();
 
             return true;
-        } catch (Exception $e) {
-            $response = array('status' => 'Internal Error', 'message' => 'Caught exception: '. $e->getMessage() ."\n");
+        } catch (\Brevo\Client\ApiException $e) {
+            $response = ['status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage()];
             return false;
         }
     } else {
-        $response = array('status' => 'error', 'message' => 'Invalid Request');
+        $response = ['status' => 'error', 'message' => 'Invalid Request'];
         return false;
     }
 }
+?>

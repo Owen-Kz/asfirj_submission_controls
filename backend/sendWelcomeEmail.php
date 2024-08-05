@@ -1,103 +1,106 @@
 <?php
 
-function SendWelcomeEmail($RecipientEmail){
+function SendWelcomeEmail($RecipientEmail) {
 
-    require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
-    // Comment out the above line if not using Composer
-    // require("<PATH TO>/sendgrid-php.php");
-    // If not using Composer, uncomment the above line and
-    // download sendgrid-php.zip from the latest release here,
-    // replacing <PATH TO> with the path to the sendgrid-php.php file,
-    // which is included in the download:
-    // https://github.com/sendgrid/sendgrid-php/releases
-    // Inmport Environment Variables
-    include __DIR__ .'/exportENV.php';
-    include __DIR__ .'/db.php';
+    require_once __DIR__ . '/../vendor/autoload.php'; // If you're using Composer (recommended)
 
-$api = $_ENV['SENDGRID_API_KEY'];
-$senderEmail = $_ENV["SENDGRID_EMAIL"];
+    // Import Environment Variables
+    include __DIR__ . '/exportENV.php';
+    include __DIR__ . '/db.php';
 
+    $apiKey = $_ENV['BREVO_API_KEY'];
+    $senderEmail = $_ENV["BREVO_EMAIL"];
 
+    if ($RecipientEmail) {
 
-if($RecipientEmail){
+        $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
+        if (!$stmt) {
+            print("Error preparing statement: " . $stmt->error);
+            return;
+        }
+        $stmt->bind_param("s", $RecipientEmail);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $count = $result->num_rows;
 
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
-$stmt->bind_param("s", $RecipientEmail);
-$stmt->execute();
-$result = $stmt->get_result();
-$run_query = $result; 
-$count = mysqli_num_rows($run_query);
+        // If user record is available in database then $count will be equal to 1
+        if ($count > 0) {
+            $row = $result->fetch_assoc();
+            $email = $row["email"];
+            $prefix = $row["prefix"];
+            $RecipientName = $row["firstname"];
 
+            $encryptedButton = md5($RecipientEmail);
 
-//if user record is available in database then $count will be equal to 1
-if($count > 0){
-    $row = mysqli_fetch_array($run_query);
-    $email = $row["email"];
-    $prefix = $row["prefix"];
-    $RecipientName = $row["firstname"];
+            // Configure the Brevo client
+            $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
+            $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
+                new \GuzzleHttp\Client(),
+                $config
+            );
 
-    $encryptedButton = md5($RecipientEmail);
+            // Create email object
+            $email = new \Brevo\Client\Model\SendSmtpEmail();
 
-$sendgrid = new \SendGrid($api);
-try {
- 
-    // print $response->statusCode() . "\n";
-    // print_r($response->headers());
-    // print $response->body() . "\n";
-    $currentYear = date("Y");
-    $subject = "ASFIRJ Account Created";
-    $htmlContent= "<h2> Hi, $prefix $RecipientName<h2>
-    <p> Welcome to ASFIRJ</p>
-    <p><a href=https://authors.asfirj.org/verify?a=$encryptedButton>click here</a> to verify your account. </p>
-    <p>Or paste this <a href=https://authors.asfirj.org/verify?a=$encryptedButton>https://authors.asfirj.org/verify?a=$encryptedButton</a> link in your browser</p>
-    <p><center><h6>African Science Research Journal</h6></p>
-    ";
-    $message =  <<<EOT
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Email Content</title>
-    </head>
-    <body>
-        <div>
-            $htmlContent
-        </div>
-        <footer>
-            <p>ASFI Research Journal (c) $currentYear</p>
-        </footer>
-    </body>
-    </html>
-    EOT;
+            // Set the sender
+            $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
+            $sender->setEmail($senderEmail);
+            $sender->setName('ASFIRJ');
+            $email->setSender($sender);
 
-        $email = new \SendGrid\Mail\Mail();
-        $email->setFrom($senderEmail, "ASFIRJ");
-        $email->setSubject($subject);
-        $email->addTo($RecipientEmail, $RecipientName);
-        $email->addContent(
-            "text/html",$message
-        );
-     
-        $response = $sendgrid->send($email);
-    
-    //      print $response->statusCode() . "\n";
-    // print_r($response->headers());
-    // print $response->body() . "\n";
+            // Set the recipient
+            $recipient = new \Brevo\Client\Model\SendSmtpEmailTo();
+            $recipient->setEmail($RecipientEmail);
+            $recipient->setName($RecipientName);
+            $email->setTo([$recipient]);
 
-    
-} catch (Exception $e) {
-    // $response = array('status' => 'Internal Error', 'message' => 'Caught exception: '. $e->getMessage() ."\n");
-         print $e;
+            // Set the subject and content
+            $currentYear = date("Y");
+            $subject = "ASFIRJ Account Created";
+            $htmlContent = "<h2> Hi, $prefix $RecipientName</h2>
+                <p>Welcome to ASFIRJ</p>
+                <p><a href='https://authors.asfirj.org/verify?a=$encryptedButton'>click here</a> to verify your account.</p>
+                <p>Or paste this <a href='https://authors.asfirj.org/verify?a=$encryptedButton'>https://authors.asfirj.org/verify?a=$encryptedButton</a> link in your browser</p>
+                <p><center><h6>African Science Research Journal</h6></center></p>";
 
-}
-}else{
-    $response = array('status'=> 'error', 'message' => 'User does not exist on Our servers');
-     print $response;
+            $message = <<<EOT
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>Email Content</title>
+            </head>
+            <body>
+                <div>
+                    $htmlContent
+                </div>
+                <footer>
+                    <p>ASFI Research Journal (c) $currentYear</p>
+                </footer>
+            </body>
+            </html>
+            EOT;
 
-}
-}else{
-    $response = array('status' => 'error', 'message' => 'Invalid Request');
+            $email->setSubject($subject);
+            $email->setHtmlContent($message);
+
+            try {
+                $response = $apiInstance->sendTransacEmail($email);
+                $response = array('status' => 'success', 'message' => 'Email sent');
+                // print $response;
+            } catch (\Brevo\Client\ApiException $e) {
+                $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage() . "\n");
+                // print $response;
+            }
+        } else {
+            $response = array('status' => 'error', 'message' => 'User does not exist on Our servers');
             // print $response;
+        }
+    } else {
+        $response = array('status' => 'error', 'message' => 'Invalid Request');
+        // print $response;
+    }
 
+    // print_r($response);
 }
-}
+

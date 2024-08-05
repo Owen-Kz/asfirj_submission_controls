@@ -1,65 +1,58 @@
 <?php
 
-function EditorAccountEmail($RecipientEmail, $acceptInvitationLink, $rejectInvitationLink){
+function EditorAccountEmail($RecipientEmail, $acceptInvitationLink, $rejectInvitationLink) {
+    require_once __DIR__ . '/../vendor/autoload.php'; // If you're using Composer (recommended)
+    require __DIR__ . '/../backend/exportENV.php';
+    include __DIR__ . '/../backend/db.php';
 
-    require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (recommended)
-    // Comment out the above line if not using Composer
-    // require("<PATH TO>/sendgrid-php.php");
-    // If not using Composer, uncomment the above line and
-    // download sendgrid-php.zip from the latest release here,
-    // replacing <PATH TO> with the path to the sendgrid-php.php file,
-    // which is included in the download:
-    // https://github.com/sendgrid/sendgrid-php/releases
-    // Inmport Environment Variables
-    include __DIR__ .'/exportENV.php';
-    include __DIR__ .'/db.php';
+    $apiKey = $_ENV['BREVO_API_KEY'];
+    $senderEmail = $_ENV['BREVO_EMAIL'];
 
-$api = $_ENV['SENDGRID_API_KEY'];
-$senderEmail = $_ENV["SENDGRID_EMAIL"];
+    if ($RecipientEmail) {
+        $encryptedButton = md5($RecipientEmail);
 
-
-
-
-if($RecipientEmail){
-
-    $encryptedButton = md5($RecipientEmail);
-
-$sendgrid = new \SendGrid($api);
-try {
- 
-    // print $response->statusCode() . "\n";
-    // print_r($response->headers());
-    // print $response->body() . "\n";
-    $subject = "ASFIRJ Review Request";
-    $message = "<h2> Hi,<h2>
-    <p> You have been invited to review a submission on ASFIRJ.</p>
-    <p>please <a href=$acceptInvitationLink>Accept INvite</a> </p>
-    <p><a href=$rejectInvitationLink>$rejectInvitationLink</a> Reject invitaion</p>
-    <p><center><h6> ".date("Y")." African Science Research Journal</h6></center></p>";
-
-        $email = new \SendGrid\Mail\Mail();
-        $email->setFrom($senderEmail, "ASFIRJ");
-        $email->setSubject($subject);
-        $email->addTo($RecipientEmail, $RecipientName);
-        $email->addContent(
-            "text/html",$message
+        $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
+        $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
+            new GuzzleHttp\Client(), $config
         );
-     
-        $response = $sendgrid->send($email);
-    
-        $response = array('status' => 'success', 'message' => 'Email sent', 'email' => $encryptedButton);
-        print $response;
 
-    
-} catch (Exception $e) {
-    $response = array('status' => 'Internal Error', 'message' => 'Caught exception: '. $e->getMessage() ."\n");
-            print $response;
+        try {
+            $subject = "ASFIRJ Review Request";
+            $message = <<<EOT
+<h2>Hi,</h2>
+<p>You have been invited to edit a submission on ASFIRJ.</p>
+<p>Please <a href='$acceptInvitationLink'>Accept Invite</a></p>
+<p><a href='$rejectInvitationLink'>Reject invitation</a></p>
+<p><center><h6>" . date("Y") . " African Science Research Journal</h6></center></p>
+EOT;
 
+            $email = new \Brevo\Client\Model\SendSmtpEmail();
+            $email->setSubject($subject);
+            $email->setHtmlContent($message);
+
+            // Create and set sender
+            $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
+            $sender->setEmail($senderEmail);
+            $sender->setName('ASFIRJ');
+            $email->setSender($sender);
+
+            // Set recipient
+            $recipient = new \Brevo\Client\Model\SendSmtpEmailTo();
+            $recipient->setEmail($RecipientEmail);
+            $email->setTo([$recipient]);
+
+            $result = $apiInstance->sendTransacEmail($email);
+
+            $response = array('status' => 'success', 'message' => 'Email sent', 'email' => $encryptedButton);
+            print json_encode($response);
+
+        } catch (\Brevo\Client\ApiException $e) {
+            $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage() . "\n");
+            print json_encode($response);
+        }
+    } else {
+        $response = array('status' => 'error', 'message' => 'Invalid Request');
+        print json_encode($response);
+    }
 }
-
-}else{
-    $response = array('status' => 'error', 'message' => 'Invalid Request');
-            print $response;
-
-}
-}
+?>

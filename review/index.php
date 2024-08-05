@@ -44,7 +44,7 @@ $one_paragraph_comment = $_POST["paragraph_summary"];
 $one_paragraph_file = "";
 $one_paragraph_file_main = $_FILES["paragraph_summary_file"];
 if(isset($one_paragraph_file_main) && $one_paragraph_file_main["size"] > 0 && isset($_FILES["paragraph_summary_file"]["tmp_name"])){
-    $one_paragraph_file = "oneparagraph".time() . '-' . basename($one_paragraph_file_main["name"]);
+    $one_paragraph_file = "oneparagraph". '-' . basename($one_paragraph_file_main["name"]);
     MoveFile("paragraph_summary_file", __DIR__."/uploads/reviews", $one_paragraph_file);
 }
 
@@ -54,7 +54,7 @@ $general_comment_file = "";
 $general_comment_file_main = $_FILES["general_comment_file"];
 
 if(isset($general_comment_file_main) && $general_comment_file_main["size"] > 0 && isset($_FILES["general_comment_file"]["tmp_name"])){
-    $general_comment_file = "generalcomment".time() . '-' . basename($general_comment_file_main["name"]);
+    $general_comment_file = "generalcomment". '-' . basename($general_comment_file_main["name"]);
 
     MoveFile("general_comment_file",  __DIR__."/uploads/reviews", $general_comment_file);
 }
@@ -65,7 +65,7 @@ $specific_comment_file = "";
 $specific_comment_file_main = $_FILES["specific_comment_file"];
 if(isset($specific_comment_file_main) && $specific_comment_file_main["size"] > 0 && isset($_FILES["specific_comment_file"]["tmp_name"])){
 
-    $specific_comment_file = "specificcomment".time() . '-' . basename($specific_comment_file_main["name"]);
+    $specific_comment_file = "specificcomment". '-' . basename($specific_comment_file_main["name"]);
 
     MoveFile("specific_comment_file",  __DIR__."/uploads/reviews", $specific_comment_file);
 }

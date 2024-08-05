@@ -140,33 +140,33 @@ if($revisionStatus === "saved_for_later"){
 
         // Logic For file upload should go here 
         if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
-            $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+            $cover_letter_file = "coverLetter". '-' . basename($cover_letter_file_main["name"]);
         
             MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
         }
         if(isset($manuscript_file) && $manuscript_file["size"] > 0 && isset($_FILES["manuscript_file"]["tmp_name"])){
-            $combinedFilename = "manuscriptFile".time() . '-' . basename($manuscript_file["name"]);
+            $combinedFilename = "manuscriptFile". '-' . basename($manuscript_file["name"]);
 
             MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $combinedFilename);
         }
         if(isset($figures) && $figures["size"] > 0 && isset($_FILES["figures"]["tmp_name"])){
-            $figuresFileName = "figures".time() . '-' . basename($figures["name"]);
+            $figuresFileName = "figures". '-' . basename($figures["name"]);
 
             MoveFile("figures",  __DIR__."/uploadedFiles", $figuresFileName);
         }
         if(isset($supplementary_material) && $supplementary_material["size"] > 0 && isset($_FILES["supplementary_materials"]["tmp_name"])){
-            $supplementaryMaterialsFileName = "supplementaryMaterial".time() . '-' . basename($supplementary_material["name"]);
+            $supplementaryMaterialsFileName = "supplementaryMaterial". '-' . basename($supplementary_material["name"]);
 
             MoveFile("supplementary_materials",  __DIR__."/uploadedFiles", $supplementaryMaterialsFileName);
         }
         if(isset($graphic_abstract) && $graphic_abstract["size"] > 0 && isset($_FILES["graphic_abstract"]["tmp_name"])){
-            $graphicAbstractFileName = "graphicAbstract".time() . '-' . basename($graphic_abstract["name"]);
+            $graphicAbstractFileName = "graphicAbstract". '-' . basename($graphic_abstract["name"]);
 
             MoveFile("graphic_abstract",  __DIR__."/uploadedFiles", $graphicAbstractFileName);
         }
 
         if(isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"])){
-            $tablesFileName = "tables".time() . '-' . basename($tables["name"]);
+            $tablesFileName = "tables". '-' . basename($tables["name"]);
 
             MoveFile("tables",  __DIR__."/uploadedFiles", $tablesFileName);
         }
@@ -188,7 +188,7 @@ if($revisionStatus === "saved_for_later"){
     // Prepare files for sending to Node.js server
              // Logic For file upload should go here 
              if(isset($cover_letter_file_main) && $cover_letter_file_main["size"] > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
-                $cover_letter_file = "coverLetter".time() . '-' . basename($cover_letter_file_main["name"]);
+                $cover_letter_file = "coverLetter". '-' . basename($cover_letter_file_main["name"]);
             
                 MoveFile("cover_letter",  __DIR__."/uploadedFiles", $cover_letter_file);
             }

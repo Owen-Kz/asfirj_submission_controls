@@ -103,7 +103,7 @@ function SendBulkEmail($RecipientEmail, $subject, $message, $editor_email, $arti
             $email = new \Brevo\Client\Model\SendSmtpEmail();
             $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
             $sender->setEmail($senderEmail);
-            $sender->setName("ASFIRJ");
+            $sender->setName("ASFI Research Journal");
 
             $recipient = new \Brevo\Client\Model\SendSmtpEmailTo();
             $recipient->setEmail($RecipientEmail);

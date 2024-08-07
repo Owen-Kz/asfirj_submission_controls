@@ -24,7 +24,7 @@ function ReviewConfirmationEmail($RecipientEmail, $reviewerEmail, $status) {
         // Set the sender
         $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
         $sender->setEmail($senderEmail);
-        $sender->setName('ASFIRJ');
+        $sender->setName('ASFI Research Journal');
         $email->setSender($sender);
 
         // Set the recipient

@@ -34,7 +34,7 @@ function SendAcceptReviewEmail($RecipientEmail, $manuscriptId) {
 
             try {
                 $currentYear = date("Y");
-                $subject = "Invitation to review manuscript for ASFIRJ ($manuscriptId)";
+                $subject = "Invitation to review manuscript for ASFI Research Journal ($manuscriptId)";
                 $htmlContent = <<<EOT
                 <!DOCTYPE html>
                 <html lang="en">

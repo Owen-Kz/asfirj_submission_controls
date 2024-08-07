@@ -36,7 +36,7 @@ function SendCoAuthorEmail($RecipientEmail, $password) {
                 $config
             );
 
-            $subject = "ASFIRJ Account Created";
+            $subject = "ASFI Research Journal Account Created";
             $htmlContent = "<h2> Hi, $prefix $RecipientName</h2>
                 <p> A paper was submitted listing you as a co-author, and an account has been created for you with the following details:</p>
                 <ul>
@@ -51,7 +51,7 @@ function SendCoAuthorEmail($RecipientEmail, $password) {
             $email = new \Brevo\Client\Model\SendSmtpEmail();
             $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
             $sender->setEmail($senderEmail);
-            $sender->setName("ASFIRJ");
+            $sender->setName("ASFI Research Journal");
 
             $recipient = new \Brevo\Client\Model\SendSmtpEmailTo();
             $recipient->setEmail($RecipientEmail);

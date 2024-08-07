@@ -34,12 +34,12 @@ function SendAccountEmail($RecipientEmail, $password) {
             // Set sender
             $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
             $sender->setEmail($senderEmail);
-            $sender->setName('ASFIRJ');
+            $sender->setName('ASFI Research Journal');
             $email->setSender($sender);
             
             // Set recipient
             $email->setTo([['email' => $RecipientEmail, 'name' => $RecipientName]]);
-            $email->setSubject("ASFIRJ Account Created");
+            $email->setSubject("ASFI Research Journal Account Created");
 
             $htmlContent = <<<EOT
             <!DOCTYPE html>

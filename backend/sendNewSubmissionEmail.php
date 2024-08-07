@@ -33,7 +33,7 @@ function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId
             // Set sender
             $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
             $sender->setEmail($senderEmail);
-            $sender->setName('ASFIRJ');
+            $sender->setName('ASFI Research Journal');
             $email->setSender($sender);
             
             // Set recipient

@@ -45,7 +45,7 @@ function SendWelcomeEmail($RecipientEmail) {
             // Set the sender
             $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
             $sender->setEmail($senderEmail);
-            $sender->setName('ASFIRJ');
+            $sender->setName('ASFI Research Journal');
             $email->setSender($sender);
 
             // Set the recipient
@@ -56,9 +56,9 @@ function SendWelcomeEmail($RecipientEmail) {
 
             // Set the subject and content
             $currentYear = date("Y");
-            $subject = "ASFIRJ Account Created";
+            $subject = "ASFI Research Journal Account Created";
             $htmlContent = "<h2> Hi, $prefix $RecipientName</h2>
-                <p>Welcome to ASFIRJ</p>
+                <p>Welcome to ASFI Research Journal</p>
                 <p><a href='https://authors.asfirj.org/verify?a=$encryptedButton'>click here</a> to verify your account.</p>
                 <p>Or paste this <a href='https://authors.asfirj.org/verify?a=$encryptedButton'>https://authors.asfirj.org/verify?a=$encryptedButton</a> link in your browser</p>
                 <p><center><h6>African Science Research Journal</h6></center></p>";

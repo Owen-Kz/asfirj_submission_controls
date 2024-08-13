@@ -73,5 +73,5 @@ function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId
         $response = array('status' => 'error', 'message' => 'Invalid Request');
     }
 
-    print_r($response);
+    // print_r($response);
 }

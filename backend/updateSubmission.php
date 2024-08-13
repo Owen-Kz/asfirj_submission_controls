@@ -108,7 +108,8 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
                         }
                     }
                     // Create the NEw Co Authors Account 
-
+                    SendNewSubmissionEmail($authorEmail[$i], $title,  $mainSubmissionId );
+                    
                     CreateCoAuthor($authorsPrefix[$i], $authors_firstname[$i],$authors_lastname[$i], $authors_other_name[$i], $authorEmail[$i], $authors_orcid[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i]);
                 }
                     // Check for Errors

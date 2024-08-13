@@ -2,6 +2,11 @@
 
 function UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName){
     include "../backend/db.php";
+    require_once "../backend/sendNewSubmissionEmail.php";
+    include "../backend/addSubmissoinKeywords.php";
+    include "../backend/addSuggestedReviewers.php";
+    include "../backend/createCoAuthor.php";
+    
     $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`,`revision_id`,`revisions_count`, `discipline`, `title`, `manuscript_file`,`cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `tracked_manuscript_file`) VALUES(?,?,?, ?, ?, ?, ?, ?, ?,?, ?,?,?,?, ?)");
     $stmt->bind_param("ssisssssssssss", $type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file,  $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $trackedManuscriptFileName);
     if($stmt->execute()){
@@ -48,7 +53,7 @@ function UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title
                     }
                 }
                 // Create the NEw Co Authors Account 
-
+                SendNewSubmissionEmail($authorEmail[$i], $title,  $mainSubmissionId );
                 CreateCoAuthor($authorsPrefix[$i], $authors_firstname[$i],$authors_lastname[$i], $authors_other_name[$i], $authorEmail[$i], $authors_orcid[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i]);
             }
                 // Check for Errors

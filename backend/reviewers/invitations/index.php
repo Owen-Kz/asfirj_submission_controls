@@ -64,7 +64,7 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
                 exit;
             } else {
 
-
+ 
                 if (isset($action)) {
                     $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = 'review_invitation_accepted' WHERE `invitation_link` =? AND `invited_user` =? ");
                     $stmt->bind_param("ss", $article_id, $userEmail);

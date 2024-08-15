@@ -18,6 +18,11 @@ if(isAdminAccount($admin) && $authorEmail != ''){
 
     if($result->num_rows > 0){
         $row = $result->fetch_assoc();
+        if($row["account_status"] !== "verified"){
+            $response = array("error"=>"Account is not Verified.");
+            echo json_encode($response);
+            exit(0);
+        }
         $password = $row["password"];
         $email = $row["email"];
         $fullname = $row["prefix"]. " " .$row["firstname"]. " ". $row["lastname"]." ".$row["othername"];
@@ -48,7 +53,7 @@ if(isAdminAccount($admin) && $authorEmail != ''){
                 if($stmt->execute()){
              $response = array("success"=>"Account Migration Successful");
                 }else{
-             $response = array("error"=>"Could Not UPdate Account");
+             $response = array("error"=>"Could Not Update Account");
 
                 }
                 
@@ -58,10 +63,11 @@ if(isAdminAccount($admin) && $authorEmail != ''){
             }
         }
     }else{
+        $response = array("error"=>"Account Does Not Exist");
 
     }
 }else{
-    $response = array("error"=>"Could Not Delete Account, You are not an Admin $data");
+    $response = array("error"=>"Could Not Migrate Account, You are not an Admin $data");
 }
 
 echo json_encode($response);

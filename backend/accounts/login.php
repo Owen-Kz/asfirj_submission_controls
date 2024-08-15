@@ -40,6 +40,13 @@ if(isset($pass) && isset($email_post)){
         // Get and verify the users password if the account exists  
         $row = mysqli_fetch_array($run_query);
         $storedHashedPassword = $row["password"];
+
+        if($row["account_status"] !== "verified"){
+
+        $response = array('status' => 'error', 'message' => 'Account Not verified, Check your email to verify your account', 'user_data' => "[]");
+        echo json_encode($response);
+        exit;
+        }
         if((password_verify($pass, $storedHashedPassword)) ){
 
         // $_SESSION["user_id"] = $row["id"];

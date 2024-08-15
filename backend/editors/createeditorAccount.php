@@ -61,7 +61,7 @@ if(isset($email) && isset($password)){
             if($result->num_rows > 0){
 
             }else{
-                $editorialLevel = "Secional Editor";
+                $editorialLevel = "sectional_editor";
                 $fullname = $prefix." ".$firstname." ".$othername." ".$lastname;
                 $stmt = $con->prepare("INSERT INTO `editors`( `email`, `fullname`, `password`, `editorial_level`, `editorial_section`) VALUES (?,?,?,?,?)");
                 $stmt->bind_param("sssss",$email, $fullname, $pass, $editorialLevel, $discipline);

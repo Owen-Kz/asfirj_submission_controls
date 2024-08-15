@@ -20,7 +20,7 @@ function SendSubscriptionEmail($RecipientEmail) {
                 $config
             );
 
-            $subject = "ASFI Research Journal Account Created";
+            $subject = "ASFI Research Journal News Letter";
             $htmlContent = "
 
                     <p>Thank you for subscribing to our newsletter. <p>
@@ -46,14 +46,13 @@ function SendSubscriptionEmail($RecipientEmail) {
 
             try {
                 $response = $apiInstance->sendTransacEmail($email);
-                print_r($response);
+                // print_r($response);
             } catch (\Brevo\Client\ApiException $e) {
-                print $e->getMessage();
+                // print $e->getMessage();
             }
 
     } else {
         $response = ['status' => 'error', 'message' => 'Invalid Request'];
-        print_r($response);
+        // print_r($response);
     }
 }
-?>

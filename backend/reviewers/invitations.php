@@ -1,27 +1,29 @@
 <?php
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-    // Allow from any origin
-    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-    header('Access-Control-Allow-Credentials: true');
-    header('Access-Control-Max-Age: 86400');    // cache for 1 day
-} 
+    // if (isset($_SERVER['HTTP_ORIGIN'])) {
+        // Allow from any origin
+        header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+        header('Access-Control-Allow-Credentials: true');
+        header('Access-Control-Max-Age: 86400');    // cache for 1 day
+    // }
 
-// Access-Control headers are received during OPTIONS requests
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    // Access-Control headers are received during OPTIONS requests
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
+            header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+        }
+        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
+            header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+        }
+        exit(0);
     }
-    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
-        header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
-    }
-    exit(0);
-}
-include "../../db.php";
+// include "../../db.php";
+include "../db.php";
 // $data = json_decode(file_get_contents("php://input"), true);
+
 $action = $_GET["action"];
 $invitationFor = $_GET["invite_for"];
 
-if($invitationFor === "edit"){
+if($invitationFor === "review"){
 
 if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
     $article_id = $_GET["a_id"];
@@ -63,15 +65,15 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
                 exit;
             } else {
 
-
+ 
                 if (isset($action)) {
-                    $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = 'edit_invitation_accepted' WHERE `invitation_link` =? AND `invited_user` =? ");
+                    $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = 'review_invitation_accepted' WHERE `invitation_link` =? AND `invited_user` =? ");
                     $stmt->bind_param("ss", $article_id, $userEmail);
                     if ($stmt->execute()) {
                         $response = array("status" => "success", "message" => "Invitation accepted successfully, redirecting to create account for ". $invitedUserEmail, "email" => $invitedUserEmail);
 
                         // Update the edit process 
-                        $stmt = $con->prepare("UPDATE `submitted_for_edit` SET `status` = 'edit_invitation_accepted' WHERE `article_id`=? AND `editor_email` =?");
+                        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = 'review_invitation_accepted' WHERE `article_id`=? AND `reviewer_email` =?");
                         $stmt->bind_param("ss",$invitationId, $invitedUserEmail );
                         $stmt->execute();
                         echo json_encode($response);
@@ -88,7 +90,7 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
 
 
                         // Update the edit process 
-                        $stmt = $con->prepare("UPDATE `submitted_for_edit` SET `status` = 'invitation_rejected' WHERE `article_id`=? AND `editor_email` =?");
+                        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = 'invitation_rejected' WHERE `article_id`=? AND `reviewer_email` =?");
                         $stmt->bind_param("ss",$invitationId, $invitedUserEmail );
                         $stmt->execute();
 

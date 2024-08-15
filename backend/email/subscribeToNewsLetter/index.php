@@ -1,6 +1,7 @@
 <?php
 include "../../cors.php";
 include "../../db.php";
+include "../../sendSubscriptionEmail.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -23,6 +24,7 @@ if ($data) {
             $stmt = $con->prepare("INSERT INTO `news_letter_subscribers` (`email`) VALUES(?)");
             $stmt->bind_param("s", $email);
             if($stmt->execute()){
+                SendSubscriptionEmail($email);
             echo json_encode(array("status"=>"success", "message" => "Thank you for Subscribing to our news letter"));
                 
             }else{

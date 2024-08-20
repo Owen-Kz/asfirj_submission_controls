@@ -64,17 +64,17 @@ function SendCoAuthorEmail($RecipientEmail, $password) {
 
             try {
                 $response = $apiInstance->sendTransacEmail($email);
-                print_r($response);
+                // print_r($response);
             } catch (\Brevo\Client\ApiException $e) {
-                print $e->getMessage();
+                // print $e->getMessage();
             }
         } else {
             $response = ['status'=> 'error', 'message' => 'User does not exist on Our servers'];
-            print_r($response);
+            // print_r($response);
         }
     } else {
         $response = ['status' => 'error', 'message' => 'Invalid Request'];
-        print_r($response);
+        // print_r($response);
     }
 }
 ?>

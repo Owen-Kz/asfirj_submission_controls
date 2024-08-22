@@ -40,6 +40,18 @@ if(isset($editor)){
         $stmt->bind_param('sssss',$article_id, $subject, $reviewerEmail, $editor_email, $message);
         $stmt->execute();
 
+        // Find All REviewers And Send the emails ro them  
+        $revStmt = $con->prepare("SEELCT * FROM `submitted_for_review` WHERE `article_id` = ? AND `status` = 'review_invitation_accepted'");
+        $revStmt->bind_param("s", $article_id);
+        $revStmt->execute();
+        $revResult = $revStmt->get_result();
+        if($revResult->num_rows > 0){
+            while($revRow = $revResult->fetch_assoc()){
+                $revEmail = $revRow["reviewer_email"];
+                ReviewerAccountEmail($revEmail, $subject, $message, $editor_email, $article_id);
+            }
+        }
+
         // Send the email notification to reviewer
        if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id)){
 

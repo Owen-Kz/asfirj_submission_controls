@@ -26,10 +26,17 @@ if(mysqli_num_rows($result) > 0){
   // Loop through each row in the result set and append it to the toReviewList array
   $toReviewList[] = $subRow;
   $reviewId = $subRow["review_id"];
-  $status = $subRow["review_status"];
+  $Status = $subRow["review_status"];
   $ArticleId = $subRow["article_id"];
   $Title = $subRow["general_comment"];
-
+  $StatusMain = "";
+      if($Status === "accepted"){
+        $StatusMain = "Submission Accepted";
+        }else if($Status === 'rejected'){
+        $StatusMain = "Submission was Rejected";
+        }else if($Status === 'review_submitted' || $Status === "submitted_for_review" || $Status === "review_invite_accepted"){
+        $StatusMain = "Under Review";
+        }
   echo "<tr id='queue_0' name='queue_0' role='row' class='odd'>         
                <td data-label='status'>              
                         
@@ -54,7 +61,7 @@ if(mysqli_num_rows($result) > 0){
                         <span> $ArticleId</span> <br><br>
                         $Title
                     </td>
-                    <td data-label='decisioned' class='whitespace-nowrap'>$status</td>
+                    <td data-label='decisioned' class='whitespace-nowrap'>$StatusMain</td>
                </tr>";
 }
       

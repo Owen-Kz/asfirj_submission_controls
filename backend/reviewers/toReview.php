@@ -30,7 +30,15 @@ if(mysqli_num_rows($result) > 0){
   $Status = $subRow["status"];
   $ArticleId = $subRow["article_id"];
   $Title = $subRow["title"];
-  echo "<tr id='queue_0' name='queue_0' role='row' class='odd'>         
+  $StatusMain = "";
+      if($Status === "accepted"){
+        $StatusMain = "Submission Accepted";
+        }else if($Status === 'rejected'){
+        $StatusMain = "Submission was Rejected";
+        }else if($Status === 'review_submitted' || $Status === "submitted_for_review" || $Status === "review_invite_accepted"){
+        $StatusMain = "Under Review";
+        }
+  echo "<tr id='queue_0' name='queue_0' role='row' class='odd'>        
   <td data-label='status'>              
            
            <form action='' onsubmit='return false' class='actionForm'>
@@ -55,7 +63,7 @@ if(mysqli_num_rows($result) > 0){
            <span>$ArticleId</span><br><br>
            $Title
        </td>
-       <td data-label='decisioned' class='whitespace-nowrap'>$Status</td>
+       <td data-label='decisioned' class='whitespace-nowrap'>$StatusMain</td>
   </tr>";
 }
       

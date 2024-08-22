@@ -66,7 +66,7 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
             } else {
 
  
-                if (isset($action)) {
+                if (isset($action) && $action === "accept") {
                     $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = 'review_invitation_accepted' WHERE `invitation_link` =? AND `invited_user` =? ");
                     $stmt->bind_param("ss", $article_id, $userEmail);
                     if ($stmt->execute()) {
@@ -82,7 +82,7 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
                         print_r($stmt->error);
                     }
 
-                } else if (isset($action)) {
+                } else if (isset($action) && $action === "reject") {
                     $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = 'invitation_rejected' WHERE `invitation_link` =? AND `invited_user` =? ");
                     $stmt->bind_param("ss", $article_id, $userEmail);
                     if ($stmt->execute()) {

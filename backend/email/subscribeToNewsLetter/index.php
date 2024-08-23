@@ -1,7 +1,7 @@
 <?php
-include __DIR__."../../cors.php";
-include __DIR__."../../db.php";
-include __DIR__."../isAdministrator.php";
+include "../../cors.php";
+include "../../db.php";
+include "../../sendSubscriptionEmail.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 

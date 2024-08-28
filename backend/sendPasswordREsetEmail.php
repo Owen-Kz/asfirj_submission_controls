@@ -39,7 +39,7 @@ function SendPasswordResetEmail($RecipientEmail, $resetToken) {
             // Set recipient
             $email->setTo([['email' => $RecipientEmail, 'name' => $RecipientName]]);
             $email->setSubject("ASFI Research Journal PASSWORD RESET TOKEN");
-
+            $year = date("Y");
             $htmlContent = <<<EOT
             <!DOCTYPE html>
             <html lang="en">
@@ -53,7 +53,7 @@ function SendPasswordResetEmail($RecipientEmail, $resetToken) {
                 <p><center><h1>$resetToken</center></h1></p>
                 <p>Ignore if you did not make this request</p>
                 <footer>
-                    <p>ASFI Research Journal (c) {date("Y")}</p>
+                    <p>ASFI Research Journal (c) $year</p>
                 </footer>
             </body>
             </html>

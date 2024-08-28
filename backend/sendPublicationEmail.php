@@ -1,6 +1,11 @@
 <?php
 
-function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId) {
+$data = json_decode(file_get_contents("php://input"), true);
+$subject = $data["subject"];
+$RecipientEmail  = $data["to"];
+$message = $data["message"];
+$fileName = $data["fileName"];
+// function SendPublicationEMail($RecipientEmail, $message, $subject) {
     require_once __DIR__ . '/../vendor/autoload.php';
 
     // Import Environment Variables
@@ -10,7 +15,7 @@ function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId
     $apiKey = $_ENV['BREVO_API_KEY'];
     $senderEmail = $_ENV["BREVO_EMAIL"];
 
-    if ($RecipientEmail) {
+    if (isset($RecipientEmail)) {
         $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
         $stmt->bind_param("s", $RecipientEmail);
         $stmt->execute();
@@ -29,51 +34,39 @@ function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId
             );
 
             $email = new \Brevo\Client\Model\SendSmtpEmail();
-            
+            $attachment = new \Brevo\Client\Model\SendSmtpEmailAttachment();
             // Set sender
             $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
             $sender->setEmail($senderEmail);
             $sender->setName('ASFI Research Journal');
             $email->setSender($sender);
+            $attachment->setName($fileName); // Set the name of your file
+            // $attachment->setUrl("https://asfirj.org/useruploads/manuscripts/$fileName"); 
+            // Offline 
             
+            $attachment->setUrl("https://asfirj.org/useruploads/manuscripts/$fileName"); 
+
+            $email->setAttachment([$attachment]);
             // Set recipient
             $email->setTo([['email' => $RecipientEmail, 'name' => $RecipientName]]);
-            $email->setSubject(" $manuscriptTitle ($manuscriptId)");
+            $email->setSubject("$subject");
             $date = date('D-M-Y');
             $htmlContent = <<<EOT
-                      <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>submission Confirmation - $manuscriptTitle</title>
-                        </head>
-                        <body>
-                            <p>$date</p>
-
-                                        <p>Dear $prefix $RecipientName,</p>
-
-                                        <p>Your manuscript referenced above has been successfully submitted online and is presently being given full consideration for publication in ASFI Research Journal (ASFIRJ).</p>
-
-                                        <p>Your paper will now be checked by the Editorial Office to ensure it is ready to go to an Editor. If there are any corrections required, your manuscript will be returned to you and you will receive instructions on what changes to make.</p>
-
-                <p>If there are no changes required, your manuscript will be assigned to an Editor for initial assessment. If your submission passes these stages, it will be sent for external peer review.</p>
-
-                <p>Your manuscript ID is <strong>[$manuscriptId]</strong>.</p>
-
-                <p>Please mention the above manuscript ID in all future correspondence with the journal. You can view the status of your manuscript at any time by logging into the submission site at <a href="https://asfirj.org/portal/login/">https://asfirj.org/portal/login/</a>.</p>
-
-                <p>It is the policy of the journal to correspond exclusively with one designated corresponding author. As the corresponding author, it is your responsibility to communicate all correspondences from the journal with your co-authors.</p>
-
-                <p><strong>Co-authors:</strong> Please contact the Editorial Office as soon as possible if you disagree with being listed as a co-author for this manuscript. Otherwise, no further action is required on your part.</p>
-
-                <p><em>ASFIRJ</em> is the official journal of the African Science Frontiers Initiatives (ASFI). It is a peer-reviewed international, open access, multidisciplinary journal, publishing original papers, expert reviews, systematic reviews and meta-analyses, position papers, guidelines, protocols, data, editorials, news and commentaries, research letters from any research field.</p>
-
-                <p>Thank you for submitting your manuscript to ASFIRJ.</p>
-
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>$subject</title>
+                </head>
+                <body>
+                    <p>$date</p>
+                    
+                    <p>Dear, $prefix $RecipientName</p>
+                    $message
                 <p>Sincerely,</p>
 
-                <p>ASFIRJ Editorial Office<br>
+                <p>ASFIRJ Publications Office<br>
                 <a href="mailto:submissions@asfirj.org">submissions@asfirj.org</a></p>
 
                 <p>ASFI Research Journal<br>
@@ -87,8 +80,6 @@ function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId
                 WhatsApp: <a href="https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3">https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3</a></p>
             </body>
             </html>
-
-            
             EOT;
 
             $email->setHtmlContent($htmlContent);
@@ -103,8 +94,8 @@ function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId
             $response = array('status' => 'error', 'message' => 'User does not exist on Our servers');
         }
     } else {
-        $response = array('status' => 'error', 'message' => 'Invalid Request');
+        $response = array('status' => 'error', 'message' => "Invalid Request $RecipientEmail");
     }
 
-    // print_r($response);
-}
+    echo json_encode($response);
+// }

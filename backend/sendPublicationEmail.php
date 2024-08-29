@@ -50,7 +50,7 @@ $fileName = $data["fileName"];
             // Set recipient
             $email->setTo([['email' => $RecipientEmail, 'name' => $RecipientName]]);
             $email->setSubject("$subject");
-            $date = date('D-M-Y');
+            $date = date('d-M-Y');
             $htmlContent = <<<EOT
                 <!DOCTYPE html>
                 <html lang="en">
@@ -62,12 +62,12 @@ $fileName = $data["fileName"];
                 <body>
                     <p>$date</p>
                     
-                    <p>Dear, $prefix $RecipientName</p>
+                    <p>Dear $prefix $RecipientName</p>
                     $message
                 <p>Sincerely,</p>
 
-                <p>ASFIRJ Publications Office<br>
-                <a href="mailto:submissions@asfirj.org">submissions@asfirj.org</a></p>
+                <p>ASFIRJ Article Production Office<br>
+                <a href="mailto:production@asfirj.org">production@asfirj.org</a></p>
 
                 <p>ASFI Research Journal<br>
                 Excellence. Quality. Impact<br>

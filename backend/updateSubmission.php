@@ -108,12 +108,14 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
                         }
                     }
                     // Create the NEw Co Authors Account 
+                    if($submissionStatus === "submitted"){
                     SendNewSubmissionEmail($authorEmail[$i], $title,  $mainSubmissionId );
                     // print_r($submissionStatus);
                     // if($submissionStatus === "submitted"){
                         
                     CreateCoAuthor($authorsPrefix[$i], $authors_firstname[$i],$authors_lastname[$i], $authors_other_name[$i], $authorEmail[$i], $authors_orcid[$i], $affiliation[$i], $affiliation_country[$i], $affiliation_city[$i]);
                     // }
+                    }
                 }
                     // Check for Errors
                 } catch (Exception $e) {

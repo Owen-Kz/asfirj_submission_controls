@@ -109,7 +109,7 @@ $articleID = $manuscriptId;
 
 if(isset($title)){
     
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND (`status` = 'saved_for_later' OR `status` = 'returned_for_correction' OR `status` = 'returned_for_revision') AND `corresponding_authors_email` = ?");
     $stmt->bind_param("ss", $articleID, $corresponding_author);
     if(!$stmt){
         $response = array("status"=>"error", "message" => $stmt->error);

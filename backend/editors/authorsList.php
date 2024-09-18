@@ -13,13 +13,28 @@ if(isset($_GET["u_id"])){
     }
     // $stmt->bind_param("s", $_GET["articleID"]);
     $stmt->execute();
-    $resutl = $stmt->get_result();
-    $authorsList = array();
-    while($row = $resutl->fetch_assoc()){
-        $authorsList[] = $row;
+    $result = $stmt->get_result();
+
+
+ while ($row = $result->fetch_assoc()) {
+    foreach ($row as $key => $value) {
+        $row[$key] = mb_convert_encoding($value ?? '', 'UTF-8', 'UTF-8'); // Use an empty string if null
     }
-    $response = array("status" => "success",  "authorsList" => $authorsList);
-    echo json_encode($response);
+     $authorsList[] = $row;
+}
+
+    //     $authorsList[] = $row;
+        
+    // }
+    // var_dump($authorsList);
+    
+     
+    $json = json_encode(array("status" => "success",  "authorsList" => $authorsList));
+ if ($json === false) {
+    echo json_last_error_msg();
+} else {
+    echo $json;
+}
 }else{
     echo json_encode(array("status"=>"error", "message"=>'Unathorized Access'));
 }

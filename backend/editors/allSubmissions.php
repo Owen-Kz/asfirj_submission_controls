@@ -17,10 +17,21 @@ if(isset($adminId)){
         $result = $stmt->get_result();
         $submissions = array();
 
-        while($row = $result->fetch_assoc()){
-            $submissions[] = $row;
-        }
-    echo json_encode(array("success" => "Admin Account", "submissions" => $submissions));
+    while ($row = $result->fetch_assoc()) {
+    foreach ($row as $key => $value) {
+        $row[$key] = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+    }
+    $submissions[] = $row;
+}
+
+// var_dump($submissions);
+
+$json = json_encode(array("success" => "Admin Account", "submissions" => $submissions));
+if ($json === false) {
+    echo json_last_error_msg();
+} else {
+    echo $json;
+}
 
     }else{
     echo json_encode(array("error" => "Not Admin Account"));

@@ -14,11 +14,10 @@ require_once __DIR__ .'/../vendor/autoload.php';// If you're using Composer (rec
 // https://github.com/sendgrid/sendgrid-php/releases
 // Inmport Environment Variables
 include __DIR__ .'/exportENV.php';
-
-$server__DB_rays = $_ENV['DB_HOST'];
-$user_DB_rays = $_ENV['DB_USER'];
-$pass_DB_rays = $_ENV['DB_PASS'];
-$db_DB_rays = $_ENV["DB_NAME"];
+$server__DB_rays = $_ENV['D_HOST'];
+$user_DB_rays = $_ENV['D_USER'];
+$pass_DB_rays = $_ENV['D_PASS'];
+$db_DB_rays = $_ENV["D_NAME"];
 
 
 

@@ -24,7 +24,7 @@ if(isset($adminId)){
     $submissions[] = $row;
 }
 
-// var_dump($submissions);
+        // var_dump($submissions);
 
 $json = json_encode(array("success" => "Admin Account", "submissions" => $submissions));
 if ($json === false) {

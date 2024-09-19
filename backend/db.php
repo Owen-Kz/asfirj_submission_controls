@@ -33,5 +33,7 @@ if (!$con) {
 
 }
 
+// Set the character set to UTF-8
+mysqli_set_charset($con, "utf8mb4");
 
 ?>

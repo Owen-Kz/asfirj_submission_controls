@@ -71,6 +71,9 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
           // For other Authors 
           if (count($authorEmail) > 0) {
       
+            if($submissionStatus === "submitted"){
+                SendNewSubmissionEmail("submissions@asfirj.org", $title,  $mainSubmissionId );
+            }
             for ($i = 0; $i < count($authorEmail); $i++) {
             
                 $authorsFullname = "$authorsPrefix[$i] $authors_firstname[$i] $authors_lastname[$i] $authors_other_name[$i] ";
@@ -110,6 +113,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
                     // Create the NEw Co Authors Account 
                     if($submissionStatus === "submitted"){
                     SendNewSubmissionEmail($authorEmail[$i], $title,  $mainSubmissionId );
+                 
                     // print_r($submissionStatus);
                     // if($submissionStatus === "submitted"){
                         

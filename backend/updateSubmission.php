@@ -5,6 +5,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     include "../backend/addSuggestedReviewers.php";
     include "../backend/createCoAuthor.php";
     require_once "../backend/sendNewSubmissionEmail.php";
+    require_once "../backend/sendEMailToHandler.php";
     // GEt the Main submission Id 
     $mainSubmissionId = "";
 
@@ -28,6 +29,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     // Send NEw submission Email
     if($submissionStatus === "submitted"){
     SendNewSubmissionEmail($corresponding_author, $title,  $mainSubmissionId );
+    SendEmailToHandler("submissions@asfirj.org", $title, $mainSubmissionId);
     }
     // Frist check if the submission exist and is ready has been saved earlier 
 
@@ -71,9 +73,6 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
           // For other Authors 
           if (count($authorEmail) > 0) {
       
-            if($submissionStatus === "submitted"){
-                SendNewSubmissionEmail("submissions@asfirj.org", $title,  $mainSubmissionId );
-            }
             for ($i = 0; $i < count($authorEmail); $i++) {
             
                 $authorsFullname = "$authorsPrefix[$i] $authors_firstname[$i] $authors_lastname[$i] $authors_other_name[$i] ";

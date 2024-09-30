@@ -1,6 +1,6 @@
 <?php
 
-function SendAcceptReviewEmail($RecipientEmail, $manuscriptId) {
+function SendAcceptReviewEmail($RecipientEmail, $manuscriptId, $ccEmail, $bccEmail) {
 
     require_once __DIR__ . '/../vendor/autoload.php'; // If you're using Composer (recommended)
     // Import Environment Variables
@@ -75,6 +75,27 @@ function SendAcceptReviewEmail($RecipientEmail, $manuscriptId) {
             $email->setTo([$recipient]);
             $email->setSubject($subject);
             $email->setHtmlContent($emailContent);
+              // Set CC recipients if provided
+  if (!empty($ccEmails)) {
+    $ccRecipients = [];
+    foreach ($ccEmails as $ccEmail) {
+        $ccRecipient = new \Brevo\Client\Model\SendSmtpEmailCc();
+        $ccRecipient->setEmail($ccEmail);
+        $ccRecipients[] = $ccRecipient;
+    }
+    $email->setCc($ccRecipients);
+}
+
+// Set BCC recipients if provided
+if (!empty($bccEmails)) {
+    $bccRecipients = [];
+    foreach ($bccEmails as $bccEmail) {
+        $bccRecipient = new \Brevo\Client\Model\SendSmtpEmailBcc();
+        $bccRecipient->setEmail($bccEmail);
+        $bccRecipients[] = $bccRecipient;
+    }
+    $email->setBcc($bccRecipients);
+}
             
                 $result = $apiInstance->sendTransacEmail($email);
 

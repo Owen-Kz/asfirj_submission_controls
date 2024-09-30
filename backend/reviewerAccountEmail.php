@@ -1,6 +1,6 @@
 <?php
 
-function ReviewerAccountEmail($RecipientEmail, $subject, $message, $editor_email, $article_id) {
+function ReviewerAccountEmail($RecipientEmail, $subject, $message, $editor_email, $article_id, $ccEmail, $bccEmails) {
     require_once __DIR__ . '/../vendor/autoload.php';
     require __DIR__ . '/../backend/exportENV.php';
     include __DIR__ . '/../backend/db.php';
@@ -111,6 +111,27 @@ EOT;
             $recipient->setEmail($RecipientEmail);
             $email->setTo([$recipient]);
 
+              // Set CC recipients if provided
+  if (!empty($ccEmails)) {
+    $ccRecipients = [];
+    foreach ($ccEmails as $ccEmail) {
+        $ccRecipient = new \Brevo\Client\Model\SendSmtpEmailCc();
+        $ccRecipient->setEmail($ccEmail);
+        $ccRecipients[] = $ccRecipient;
+    }
+    $email->setCc($ccRecipients);
+}
+
+// Set BCC recipients if provided
+if (!empty($bccEmails)) {
+    $bccRecipients = [];
+    foreach ($bccEmails as $bccEmail) {
+        $bccRecipient = new \Brevo\Client\Model\SendSmtpEmailBcc();
+        $bccRecipient->setEmail($bccEmail);
+        $bccRecipients[] = $bccRecipient;
+    }
+    $email->setBcc($bccRecipients);
+}
             $result = $apiInstance->sendTransacEmail($email);
 
             // Update database status

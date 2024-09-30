@@ -10,6 +10,11 @@ $reviewerEmail = $_POST["reviewerEmail"];
 $subject = $_POST["subject"];
 $message = $_POST["message"];
 
+    // Convert comma-separated CC and BCC to arrays
+    $ccEmails = isset($_POST['ccEmail']) ? explode(',', $_POST['ccEmail']) : [];
+    $bccEmails = isset($_POST['bccEmail']) ? explode(',', $_POST['bccEmail']) : [];
+
+
 if(isset($editor)){
     $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`email`) = ? AND (`editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?)");
 
@@ -41,7 +46,7 @@ if(isset($editor)){
         $stmt->execute();
 
         // Send the email notification to reviewer
-       if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id)){
+       if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails)){
 
         // Create the review process entry 
         // $stmt = $con->prepare("INSERT INTO `submitted_for_review` (`article_id`, `reviewer_email`, `submitted_by`) VALUES (?,?,?)");

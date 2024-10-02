@@ -12,8 +12,9 @@ $message = $_POST["message"];
 $invitedFor = "To Edit";
 
     // Convert comma-separated CC and BCC to arrays
-    $ccEmails = isset($_POST['ccEmail']) ? explode(',', $_POST['ccEmail']) : [];
-    $bccEmails = isset($_POST['bccEmail']) ? explode(',', $_POST['bccEmail']) : [];
+    $ccEmails = isset($_POST['ccEmail']) && isset($_POST['ccEmail']) != '' ? explode(',', $_POST['ccEmail']) : [];
+    $bccEmails = isset($_POST['bccEmail']) && isset($_POST['bccEmail']) != ''? explode(',', $_POST['bccEmail']) : [];
+
 
 
 if(isset($editor)){

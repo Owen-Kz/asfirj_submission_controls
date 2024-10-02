@@ -1,6 +1,6 @@
 <?php
 
-function ReviewerAccountEmail($RecipientEmail, $subject, $message, $editor_email, $article_id, $ccEmail, $bccEmails) {
+function ReviewerAccountEmail($RecipientEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails) {
     require_once __DIR__ . '/../vendor/autoload.php';
     require __DIR__ . '/../backend/exportENV.php';
     include __DIR__ . '/../backend/db.php';
@@ -112,7 +112,8 @@ EOT;
             $email->setTo([$recipient]);
 
               // Set CC recipients if provided
-  if (!empty($ccEmails)) {
+
+  if (!empty($ccEmails) && count($ccEmails) > 0 && $ccEmails != [""]) {
     $ccRecipients = [];
     foreach ($ccEmails as $ccEmail) {
         $ccRecipient = new \Brevo\Client\Model\SendSmtpEmailCc();
@@ -123,7 +124,7 @@ EOT;
 }
 
 // Set BCC recipients if provided
-if (!empty($bccEmails)) {
+if (!empty($bccEmails) && count($bccEmails) > 0 && $bccEmails != [""]) {
     $bccRecipients = [];
     foreach ($bccEmails as $bccEmail) {
         $bccRecipient = new \Brevo\Client\Model\SendSmtpEmailBcc();
@@ -141,11 +142,14 @@ if (!empty($bccEmails)) {
 
             return true;
         } catch (\Brevo\Client\ApiException $e) {
+         
             $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage() . "\n");
+
             return false;
         }
     } else {
         $response = array('status' => 'error', 'message' => 'Invalid Request');
+        // echo json_encode($response);
         return false;
     }
 }

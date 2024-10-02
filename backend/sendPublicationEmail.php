@@ -12,7 +12,8 @@ $fileName = $data["fileName"];
     include __DIR__ . '/exportENV.php';
     include __DIR__ . '/db.php';
 
-    $apiKey = $_ENV['BREVO_API_KEY'];
+    $apiKey = $_ENV['BREVO_API_KEY'];        echo $ccEmail;
+
     $senderEmail = $_ENV["BREVO_EMAIL"];
 
     if (isset($RecipientEmail)) {

@@ -1,6 +1,6 @@
 <?php
 
-function SendAcceptReviewEmail($RecipientEmail, $manuscriptId, $ccEmail, $bccEmail) {
+function SendAcceptReviewEmail($RecipientEmail, $manuscriptId, $ccEmails, $bccEmails) {
 
     require_once __DIR__ . '/../vendor/autoload.php'; // If you're using Composer (recommended)
     // Import Environment Variables

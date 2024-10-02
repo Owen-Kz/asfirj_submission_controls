@@ -10,10 +10,10 @@ $reviewerEmail = $_POST["reviewerEmail"];
 $subject = $_POST["subject"];
 $message = $_POST["message"];
 
-    // Convert comma-separated CC and BCC to arrays
-    $ccEmails = isset($_POST['ccEmail']) ? explode(',', $_POST['ccEmail']) : [];
-    $bccEmails = isset($_POST['bccEmail']) ? explode(',', $_POST['bccEmail']) : [];
 
+    // Convert comma-separated CC and BCC to arrays
+    $ccEmails = isset($_POST['ccEmail']) && isset($_POST['ccEmail']) != '' ? explode(',', $_POST['ccEmail']) : [];
+    $bccEmails = isset($_POST['bccEmail']) && isset($_POST['bccEmail']) != ''? explode(',', $_POST['bccEmail']) : [];
 
 if(isset($editor)){
     $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`email`) = ? AND (`editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?)");

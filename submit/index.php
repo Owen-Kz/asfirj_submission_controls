@@ -10,6 +10,8 @@ include "../moveFile.php";
 session_start();
 
 $combinedFilename  = "";
+$combinedDocFile = "";
+
 $title = $_POST["manuscript_full_title"];
 $type = $_POST["article_type"];
 $discipline = $_POST["discipline"];
@@ -181,7 +183,7 @@ if (isset($type)) {
 
 
         // then update or insert the file into the database 
-        UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name,  $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName, $membership_id);
+        UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $combinedDocFile, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name,  $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName, $membership_id);
 
     } else {
              // Logic For file upload should go here 
@@ -236,7 +238,9 @@ if (isset($type)) {
     }
 
         // Send files to Node.js server
-        $url = "https://process.asfirj.org/external/api/combinePDF"; // Replace with your Node.js server URL
+        $url = "https://process.asfirj.org/external/api/combinePDF";
+        $wordDocURL = "https://process.asfirj.org/external/api/combineDOC";
+         // Replace with your Node.js server URL
         // $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL
 
 
@@ -259,8 +263,34 @@ if (isset($type)) {
         }
         curl_close($ch);
 
+        // Handle WordDocuments 
+
+        $ch_WORD = curl_init();
+        curl_setopt($ch_WORD, CURLOPT_URL, $wordDocURL);
+        curl_setopt($ch_WORD, CURLOPT_POST, 1);
+        curl_setopt($ch_WORD, CURLOPT_POSTFIELDS, $fields);
+        // curl_setopt($ch_WORD, CURLOPT_RETURNTRANSFER, true);
+// curl_setopt($ch_WORD, CURLOPT_CAINFO, __DIR__ . '/cacert.pem'); // Path to cacert.pem file 
+        curl_setopt($ch_WORD, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch_WORD, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification (insecure)
+
+
+        $response_DOC = curl_exec($ch_WORD);
+        if (curl_errno($ch_WORD)) {
+            // echo 'Error:' . curl_error($ch);
+            $response = array("status" => "error", "message" => 'Curl Error:' . curl_error($ch));
+            echo json_encode($response);
+            exit;
+        }
+        curl_close($ch_WORD);
+
         if ($response) {
             $responseDecoded = json_decode($response, true);
+            $responseDecoded_DOC = json_decode($response_DOC, true);
+            if ($responseDecoded_DOC) {
+                $combinedDocFile = $responseDecoded_DOC['filename'];
+                $combinedFilePath = 'uploads/' . $combinedDocFile;
+            }
             if ($responseDecoded['success']) {
                 $combinedFilename = $responseDecoded['filename'];
                 $combinedFilePath = 'uploads/' . $combinedFilename;
@@ -268,7 +298,7 @@ if (isset($type)) {
 
                 if ($combinedFilename) {
                     // then update or insert the file into the database 
-                    UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $cover_letter_file, $abstract, $corresponding_author, $articleID, "submitted", $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name,  $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName, $membership_id);
+                    UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $combinedDocFile, $cover_letter_file, $abstract, $corresponding_author, $articleID, "submitted", $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name,  $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName, $membership_id);
 
 
                 } else {

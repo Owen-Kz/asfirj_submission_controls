@@ -17,12 +17,19 @@ if(isset($adminId)){
         $result = $stmt->get_result();
         $submissions = array();
 
-    while ($row = $result->fetch_assoc()) {
-    foreach ($row as $key => $value) {
-        $row[$key] = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
-    }
-    $submissions[] = $row;
-}
+        while ($row = $result->fetch_assoc()) {
+            foreach ($row as $key => $value) {
+                // Check if $value is not null
+                if ($value !== null) {
+                    $row[$key] = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+                } else {
+                    // You can also set a default value or keep it as null if needed
+                    $row[$key] = ''; // or null
+                }
+            }
+            $submissions[] = $row;
+        }
+        
 
         // var_dump($submissions);
 

@@ -287,9 +287,11 @@ if (isset($type)) {
         if ($response) {
             $responseDecoded = json_decode($response, true);
             $responseDecoded_DOC = json_decode($response_DOC, true);
-            if ($responseDecoded_DOC) {
+            if ($responseDecoded_DOC['success']) {
                 $combinedDocFile = $responseDecoded_DOC['filename'];
                 $combinedFilePath = 'uploads/' . $combinedDocFile;
+            }else {
+                return json_encode($responseDecoded_DOC);
             }
             if ($responseDecoded['success']) {
                 $combinedFilename = $responseDecoded['filename'];

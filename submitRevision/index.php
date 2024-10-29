@@ -68,6 +68,7 @@ $manuscriptId = $_POST["manuscript_id"];
 $revisionStatus = $_POST["review_status"];
 
 $combinedFilename = "";
+$originalFilename = "";
 $combinedDocFile = "";
 
 $trackedManuscriptFile  = $_FILES["tracked_revisedmanuscript_file"];
@@ -149,8 +150,10 @@ if($revisionStatus === "saved_for_later"){
         }
         if(isset($manuscript_file) && $manuscript_file["size"] > 0 && isset($_FILES["manuscript_file"]["tmp_name"])){
             $combinedFilename = "manuscriptFile". '-' . basename($manuscript_file["name"]);
+            $originalFilename = "manuscriptFile". '-' . basename($manuscript_file["name"]);
 
             MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $combinedFilename);
+            // MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $originalFilename);
         }
         if(isset($figures) && $figures["size"] > 0 && isset($_FILES["figures"]["tmp_name"])){
             $figuresFileName = "figures". '-' . basename($figures["name"]);
@@ -183,7 +186,7 @@ if($revisionStatus === "saved_for_later"){
                 MoveFile("tracked_revisedmanuscript",  __DIR__."/uploadedFiles", $trackedManuscriptFileName);
             }
         
-    UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $combinedDocFile, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName);
+    UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, basename($_FILES["manuscript_file"]["name"]), $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName);
 }else{
     // $fields = array(
     //     'manuscript_file' => new CURLFile($manuscript_file['tmp_name'], $manuscript_file['type'], $manuscript_file['name']),
@@ -287,7 +290,7 @@ if (isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"]
 
         if ($combinedFilename) {
             // Finally UploadDocuments after file has been combined
-            UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $combinedDocFile, $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $$graphicAbstractFileName, $supplementaryMaterialsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName);
+            UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, basename($_FILES["manuscript_file"]["name"]), $cover_letter_file, $abstract, $corresponding_author, $articleID, $revisionStatus, $tablesFileName, $figuresFileName, $$graphicAbstractFileName, $supplementaryMaterialsFileName, $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName);
         } else {
             $response = array("status"=>"error", "message"=>"Error moving combined PDF to designated folder");
             echo json_encode($response);

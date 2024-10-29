@@ -278,11 +278,11 @@ if (isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"]
 
         if ($response) {
             $responseDecoded = json_decode($response, true);
-            $responseDecoded_DOC = json_decode($response_DOC, true);
-            if ($responseDecoded_DOC) {
-                $combinedDocFile = $responseDecoded_DOC['filename'];
-                $combinedFilePath = 'uploads/' . $combinedDocFile;
-            }
+            // $responseDecoded_DOC = json_decode($response_DOC, true);
+            // if ($responseDecoded_DOC) {
+            //     $combinedDocFile = $responseDecoded_DOC['filename'];
+            //     $combinedFilePath = 'uploads/' . $combinedDocFile;
+            // }
     if ($responseDecoded['success']) {
         $combinedFilename = $responseDecoded['filename'];
         $combinedFilePath = 'uploads/' . $combinedFilename;

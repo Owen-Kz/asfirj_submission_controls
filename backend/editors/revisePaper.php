@@ -45,7 +45,7 @@ if(isset($editor)){
         $stmt->execute();
 
         // Find All REviewers And Send the emails ro them  
-        $revStmt = $con->prepare("SEELCT * FROM `submitted_for_review` WHERE `article_id` = ? AND `status` = 'review_invitation_accepted'");
+        $revStmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` = ? AND `status` = 'review_invitation_accepted'");
         $revStmt->bind_param("s", $article_id);
         $revStmt->execute();
         $revResult = $revStmt->get_result();

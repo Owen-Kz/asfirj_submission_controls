@@ -128,6 +128,7 @@ if (isset($type)) {
     // $count = mysqli_num_rows($result);
 // if($count > 0){
     $row = $result->fetch_assoc();
+    if($result->num_rows > 0){
     $countSub = $row["id"] + 1;
     if ($countSub < 10) {
         $submissionsCount = "0000" . $row["id"] + 1;
@@ -140,6 +141,9 @@ if (isset($type)) {
     } else {
         $submissionsCount = "0000".$row["id"] + 1;
 
+    }
+    }else{
+        $submissionsCount = "000001";
     }
 
     // }

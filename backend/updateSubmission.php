@@ -48,7 +48,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
  
  
           // UPdaet the Status 
-          $stmtIST = $con->prepare("UPDATE `submissions` SET `article_type` = ?, `revision_id`=?, `discipline` = ?, `title` = ? , `manuscript_file` = ?, `document_file` = ?, `cover_letter_file` = ?, `abstract` =?, `corresponding_authors_email` = ?, `tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?, `status` = ?, `tracked_manuscript_file` =?, `previous_manuscript_id ` = ? WHERE `article_id` = ?");
+          $stmtIST = $con->prepare("UPDATE `submissions` SET `article_type` = ?, `revision_id`=?, `discipline` = ?, `title` = ? , `manuscript_file` = ?, `document_file` = ?, `cover_letter_file` = ?, `abstract` =?, `corresponding_authors_email` = ?, `tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?, `status` = ?, `tracked_manuscript_file` =?, `previous_manuscript_id` = ? WHERE `article_id` = ?");
           if(!$stmtIST){
               echo json_encode(array("status" => "error", "message" => $stmtIST->error));
           }
@@ -58,7 +58,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
           echo json_encode($response);
     }else{
         // Create a NEw Submission if the submission does not exist 
-        $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`, `document_file`, `cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `revision_id`, `status`, `tracked_manuscript_file`, `previous_manuscript_id `) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`, `discipline`, `title`, `manuscript_file`, `document_file`, `cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `revision_id`, `status`, `tracked_manuscript_file`, `previous_manuscript_id`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         if(!$stmt){
             echo $stmt->error;
             exit;

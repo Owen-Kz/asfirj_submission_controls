@@ -36,7 +36,7 @@ if(isset($pass) && isset($email_post)){
    
 	//if user record is available in database then $count will be equal to 1
 
-	if($result){
+	if($result && $count > 0){
         // Get and verify the users password if the account exists  
         $row = mysqli_fetch_array($run_query);
         $storedHashedPassword = $row["password"];

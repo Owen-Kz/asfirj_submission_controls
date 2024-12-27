@@ -258,10 +258,10 @@ if (isset($type)) {
     }
 
         // Send files to Node.js server
-        $url = "http://localhost:31000/external/api/combinePDF";
-        $wordDocURL = "http://localhost:31000/external/api/combineDOC";
+        $url = "https://process.asfirj.org/external/api/combinePDF";
+        $wordDocURL = "https://process.asfirj.org/external/api/combineDOC";
          // Replace with your Node.js server URL
-        // $url = "http://localhost:31000/external/api/combinePDF"; // Replace with your Node.js server URL
+        // $url = "https://process.asfirj.org/external/api/combinePDF"; // Replace with your Node.js server URL
 
 
         $ch = curl_init();

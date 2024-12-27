@@ -198,7 +198,7 @@ if (isset($type)) {
 
             $trackedManuscriptFileName = "tracked_revised_manuscript-".$timestamp . '.' . $fileExtensionTracked;
 
-            MoveFile("tracked_revisedmanuscript",  __DIR__."/uploadedFiles", $trackedManuscriptFileName);
+            MoveFile("tracked_revisedmanuscript_file",  __DIR__."/uploadedFiles", $trackedManuscriptFileName);
         }
 
 
@@ -258,10 +258,10 @@ if (isset($type)) {
     }
 
         // Send files to Node.js server
-        $url = "https://process.asfirj.org/external/api/combinePDF";
-        $wordDocURL = "https://process.asfirj.org/external/api/combineDOC";
+        $url = "http://localhost:31000/external/api/combinePDF";
+        $wordDocURL = "http://localhost:31000/external/api/combineDOC";
          // Replace with your Node.js server URL
-        // $url = "https://process.asfirj.org/external/api/combinePDF"; // Replace with your Node.js server URL
+        // $url = "http://localhost:31000/external/api/combinePDF"; // Replace with your Node.js server URL
 
 
         $ch = curl_init();

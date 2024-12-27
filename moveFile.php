@@ -18,10 +18,10 @@ function MoveFile($outputFile, $designatedDirectory, $newFilename)
     $manuscriptFile = basename($_FILES[$outputFile]["name"]);
     $targetFile = $uploadDir . $manuscriptFile;
 
-    // Check if the original file already exists, and delete it if necessary
-    if (file_exists($targetFile)) {
-        unlink($targetFile);
-    }
+    // // Check if the original file already exists, and delete it if necessary
+    // if (file_exists($targetFile)) {
+    //     unlink($targetFile);
+    // }
 
     // Attempt to move the uploaded file to the designated directory with the original name
     if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {

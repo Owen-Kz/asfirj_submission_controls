@@ -1,6 +1,6 @@
 <?php
 
-function SendEmailToHandler($RecipientEmail, $manuscriptTitle, $manuscriptId) {
+function NewSignupEmailToHandler($RecipientEmail, $userEmail, $userFullname) {
     require_once __DIR__ . '/../vendor/autoload.php';
 
     // Import Environment Variables
@@ -13,7 +13,7 @@ function SendEmailToHandler($RecipientEmail, $manuscriptTitle, $manuscriptId) {
     if ($RecipientEmail) {
 
             $prefix = "";
-            $RecipientName = "Submissions@asfirj.org";
+            $RecipientName = "Editorial Board";
 
             $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
             $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
@@ -31,7 +31,7 @@ function SendEmailToHandler($RecipientEmail, $manuscriptTitle, $manuscriptId) {
             
             // Set recipient
             $email->setTo([['email' => $RecipientEmail, 'name' => $RecipientName]]);
-            $email->setSubject(" $manuscriptTitle ($manuscriptId)");
+            $email->setSubject(" New Account Creation");
             $date = date('D-M-Y');
             $htmlContent = <<<EOT
                       <!DOCTYPE html>
@@ -39,26 +39,19 @@ function SendEmailToHandler($RecipientEmail, $manuscriptTitle, $manuscriptId) {
                         <head>
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>submission Confirmation - $manuscriptTitle</title>
+                            <title>New Signup - $userEmail</title>
                         </head>
                         <body>
                         <p>$date</p>
 
                         <p>Dear $prefix $RecipientName,</p>
 
-                        <p>A new submission with the title ($manuscriptTitle) has just been made.</p>
-
-                                    
-
-                <p>Manuscript ID is <strong>[$manuscriptId]</strong>.</p>
-
-
-
+                        <p>$userFullname ($userEmail) Just created an account. Please login to your dashboard to manually verify their account if they have any issues</p>
           
 
                 <p>Sincerely,</p>
 
-                <p>ASFIRJ Editorial Office<br>
+                <p>ASFIRJ In-built ontifications System<br>
                 <a href="mailto:submissions@asfirj.org">submissions@asfirj.org</a></p>
 
                 <p>ASFI Research Journal<br>

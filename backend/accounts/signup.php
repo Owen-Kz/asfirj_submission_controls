@@ -3,6 +3,7 @@
 include "../cors.php";
 include "../db.php";
 include "../sendWelcomeEmail.php";
+include "../sendNewSignUpEmailToHandler.php";
 session_start();
 
 $data = json_decode(file_get_contents("php://input"), true);
@@ -47,8 +48,11 @@ if(isset($email) && isset($password)){
             $stmt->bind_param("ssssssssssss", $prefix, $email, $firstname, $lastname, $othername,$orcidID, $discipline, $affiliations, $affiliations_country, $affiliations_city, $pass, $available_for_review);
             
             if($stmt->execute()){
+                $userFullname = "$firstname $lastname";
+                $RecipientEmail = "submissions@asfirj.org";
 
                 SendWelcomeEmail($email);
+                NewSignupEmailToHandler($RecipientEmail, $email, $userFullname);
 
                 $response = array("status"=>"success", "message"=>"Account Created Successfully, A verification email has been sent to $email");
                 echo json_encode($response);

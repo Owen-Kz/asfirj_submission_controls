@@ -63,9 +63,9 @@ function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId
 
                 <p>Please mention the above manuscript ID in all future correspondence with the journal. You can view the status of your manuscript at any time by logging into the submission site at <a href="https://asfirj.org/portal/login/">https://asfirj.org/portal/login/</a>.</p>
 
-                <p>It is the policy of the journal to correspond exclusively with one designated corresponding author. As the corresponding author, it is your responsibility to communicate all correspondences from the journal with your co-authors.</p>
+                <p>It is the policy of the journal to correspond exclusively with one designated corresponding author. It is the responsibility of the corresponding author to communicate all correspondences from the journal with the co-authors.</p>
 
-                <p><strong>Co-authors:</strong> Please contact the Editorial Office as soon as possible if you disagree with being listed as a co-author for this manuscript. Otherwise, no further action is required on your part.</p>
+                <p><strong>Co-authors</strong> should contact the Editorial Office as soon as possible if they disagree with being listed as co-authors in submitted manuscript. Otherwise, no further action is required on their part.</p>
 
                 <p><em>ASFIRJ</em> is the official journal of the African Science Frontiers Initiatives (ASFI). It is a peer-reviewed international, open access, multidisciplinary journal, publishing original papers, expert reviews, systematic reviews and meta-analyses, position papers, guidelines, protocols, data, editorials, news and commentaries, research letters from any research field.</p>
 

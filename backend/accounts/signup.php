@@ -49,7 +49,7 @@ if(isset($email) && isset($password)){
             
             if($stmt->execute()){
                 $userFullname = "$firstname $lastname";
-                $RecipientEmail = "submissions@asfirj.org";
+                $RecipientEmail = "ajibolaoladejo95@gmail.com";
 
                 SendWelcomeEmail($email);
                 NewSignupEmailToHandler($RecipientEmail, $email, $userFullname);

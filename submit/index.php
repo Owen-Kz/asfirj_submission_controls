@@ -346,9 +346,12 @@ if (isset($type)) {
                     $response = array("status" => "error", "message" => "Error moving combined PDF to designated folder");
                     echo json_encode($response);
                 }
+            }else{
+                $response = array("status" => "error", "message" => "Error moving combined PDF to designated folder");
+                echo json_encode($response);
             }
         } else {
-            $response = array("status" => "error", "message" => "Error combining PDFs");
+            $response = array("status" => "error", "message" => $responseDecoded["message"]);
             echo json_encode($response);
         }
     }

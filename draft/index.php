@@ -117,6 +117,7 @@ $abstract = $_POST["abstract"];
 $corresponding_author = $_POST["corresponding_author"];
 $Buffer = bin2hex(random_bytes(7));
 $articleID = $manuscriptId;
+$otherFiles = "";
 
 if(isset($title)){
     
@@ -141,6 +142,7 @@ if(isset($title)){
 
     // Prepare files for sending to Node.js server
     if($submissionStatus === "saved_for_later"){
+        $otherFiles = [];
         // Logic For file upload should go here 
         if(isset($_FILES["cover_letter"]) && isset($_FILES["cover_letter"]["size"]) > 0 && isset($_FILES["cover_letter"]["tmp_name"])){
             $fileExtensionCover= pathinfo($cover_letter_file_main["name"], PATHINFO_EXTENSION);
@@ -158,6 +160,7 @@ if(isset($title)){
 
             MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $combinedFilename);
             // MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $originalFilename);
+            array_push($otherFiles,  "https://cp.asfirj.org/uploadedFiles/". $combinedFilename);
         
         }else{
             $combinedFilename = "";
@@ -169,6 +172,8 @@ if(isset($title)){
             $figuresFileName = "figures-".$timestamp . '.' .$fileExtensionFigures;
 
             MoveFile("figures",  __DIR__."/uploadedFiles", $figuresFileName);
+
+            array_push($otherFiles,  "https://cp.asfirj.org/uploadedFiles/". $figuresFileName);
         }
         if(isset($supplementary_material) && $supplementary_material["size"] > 0 && isset($_FILES["supplementary_materials"]["tmp_name"])){
             $fileExtensionMaterial = pathinfo($supplementary_material["name"], PATHINFO_EXTENSION);
@@ -176,6 +181,8 @@ if(isset($title)){
             $supplementaryMaterialsFileName = "supplementaryMaterial-".$timestamp . '.' . $fileExtensionMaterial;
 
             MoveFile("supplementary_materials",  __DIR__."/uploadedFiles", $supplementaryMaterialsFileName);
+
+            array_push($otherFiles,  "https://cp.asfirj.org/uploadedFiles/". $supplementaryMaterialsFileName);
         }
         if(isset($graphic_abstract) && $graphic_abstract["size"] > 0 && isset($_FILES["graphic_abstract"]["tmp_name"])){
             $fileExtension = pathinfo($graphic_abstract["name"], PATHINFO_EXTENSION);
@@ -184,6 +191,8 @@ if(isset($title)){
             $graphicAbstractFileName = "graphicAbstract-" . $timestamp . '.' . $fileExtension;
         
             MoveFile("graphic_abstract",  __DIR__."/uploadedFiles", $graphicAbstractFileName);
+
+            array_push($otherFiles,  "https://cp.asfirj.org/uploadedFiles/". $graphicAbstractFileName);
         }
 
         if(isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"])){
@@ -192,6 +201,8 @@ if(isset($title)){
             $tablesFileName = "tables".$timestamp . '.' .$fileExtensionTables;
 
             MoveFile("tables",  __DIR__."/uploadedFiles", $tablesFileName);
+
+            array_push($otherFiles,  "https://cp.asfirj.org/uploadedFiles/". $tablesFileName);
         }
         
         // For tracked Manuscript File 
@@ -201,9 +212,10 @@ if(isset($title)){
             $trackedManuscriptFileName = "tracked_revised_manuscript-".$timestamp . '.' . $fileExtensionTracked;
 
             MoveFile("tracked_revisedmanuscript",  __DIR__."/uploadedFiles", $trackedManuscriptFileName);
+            array_push($otherFiles,  "https://cp.asfirj.org/uploadedFiles/". $trackedManuscriptFileName);
         }
         // then update or insert the file into the database 
-        UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, basename($_FILES["manuscript_file"]["name"]), $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName, $membership_id, $previousManuscriptID);
+        UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, Json_encode($otherFiles), $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName, $membership_id, $previousManuscriptID);
 
         
 
@@ -254,6 +266,7 @@ if(isset($title)){
         }else{
             $fields["tracked_manuscript"] = new CURLFile($dummyPDFPath, 'application/pdf', 'dummy.pdf');
         }
+        $fields["revisionId"] = $RevisionsId;
     // if the submission status is not save for later then send the files to nodeJs for processing and update the submission table 
     // Send files to Node.js server
             $url = "https://process.asfirj.org/external/api/combinePDF";
@@ -283,24 +296,24 @@ if(isset($title)){
 
         // Handle WordDocuments 
 
-        $ch_WORD = curl_init();
-        curl_setopt($ch_WORD, CURLOPT_URL, $wordDocURL);
-        curl_setopt($ch_WORD, CURLOPT_POST, 1);
-        curl_setopt($ch_WORD, CURLOPT_POSTFIELDS, $fields);
-        // curl_setopt($ch_WORD, CURLOPT_RETURNTRANSFER, true);
-// curl_setopt($ch_WORD, CURLOPT_CAINFO, __DIR__ . '/cacert.pem'); // Path to cacert.pem file 
-        curl_setopt($ch_WORD, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch_WORD, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification (insecure)
+//         $ch_WORD = curl_init();
+//         curl_setopt($ch_WORD, CURLOPT_URL, $wordDocURL);
+//         curl_setopt($ch_WORD, CURLOPT_POST, 1);
+//         curl_setopt($ch_WORD, CURLOPT_POSTFIELDS, $fields);
+//         // curl_setopt($ch_WORD, CURLOPT_RETURNTRANSFER, true);
+// // curl_setopt($ch_WORD, CURLOPT_CAINFO, __DIR__ . '/cacert.pem'); // Path to cacert.pem file 
+//         curl_setopt($ch_WORD, CURLOPT_RETURNTRANSFER, true);
+//         curl_setopt($ch_WORD, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification (insecure)
 
 
-        $response_DOC = curl_exec($ch_WORD);
-        if (curl_errno($ch_WORD)) {
-            // echo 'Error:' . curl_error($ch);
-            $response = array("status" => "error", "message" => 'Curl Error:' . curl_error($ch));
-            echo json_encode($response);
-            exit;
-        }
-        curl_close($ch_WORD);
+        // $response_DOC = curl_exec($ch_WORD);
+        // if (curl_errno($ch_WORD)) {
+        //     // echo 'Error:' . curl_error($ch);
+        //     $response = array("status" => "error", "message" => 'Curl Error:' . curl_error($ch));
+        //     echo json_encode($response);
+        //     exit;
+        // }
+        // curl_close($ch_WORD);
 
         if ($response) {
             $responseDecoded = json_decode($response, true);
@@ -310,13 +323,15 @@ if(isset($title)){
             //     $combinedFilePath = 'uploads/' . $combinedDocFile;
             // }  
              if ($responseDecoded['success']) {
-        $combinedFilename = $responseDecoded['filename'];
-        $combinedFilePath = 'uploads/' . $combinedFilename;
+        $combinedFilename = $responseDecoded['combinedFile'];
+        // $combinedFilePath = 'uploads/' . $combinedFilename;
 
+        $otherFiles = json_encode($responseDecoded['originalFiles']);
+        
 
         if ($combinedFilename) {
             // then update or insert the file into the database 
-            UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, basename($_FILES["manuscript_file"]["name"]), $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName, $membership_id, $previousManuscriptID);
+            UpdateTheSubmission($type, $RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename, $otherFiles, $cover_letter_file, $abstract, $corresponding_author, $articleID, $submissionStatus, $tablesFileName, $figuresFileName, $graphicAbstractFileName, $supplementaryMaterialsFileName,  $authorsPrefix, $authorEmail,$authors_firstname,$authors_lastname, $authors_other_name, $authors_orcid, $affiliation, $affiliation_country, $affiliation_city, $keywords, $suggested_reviewer_fullname, $suggested_reviewer_affiliation, $suggested_reviewer_country, $suggested_reviewer_city, $suggestedReviewerEmail, $LoggedInauthorsPrefix,$LoggedInauthors_firstname, $LoggedInauthors_lastname, $LoggedInauthors_other_name, $LoggedInauthorEmail, $loggedIn_authors_ORCID, $LoggedInaffiliation, $LoggedInaffiliation_country, $LoggedInaffiliation_city, $trackedManuscriptFileName, $membership_id, $previousManuscriptID);
 
         } else {
             $response = array("status"=>"error", "message"=>"Error moving combined PDF to designated folder");

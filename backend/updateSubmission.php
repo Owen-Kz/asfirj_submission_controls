@@ -28,8 +28,8 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
 
     // Send NEw submission Email
     if($submissionStatus === "submitted"){
-    // SendNewSubmissionEmail($corresponding_author, $title,  $mainSubmissionId );
-    // SendEmailToHandler("submissions@asfirj.org", $title, $mainSubmissionId);
+    SendNewSubmissionEmail($corresponding_author, $title,  $mainSubmissionId );
+    SendEmailToHandler("submissions@asfirj.org", $title, $mainSubmissionId);
     }
     // Frist check if the submission exist and is ready has been saved earlier 
 

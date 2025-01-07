@@ -273,7 +273,7 @@ if (isset($type)) {
     }
     $fields["revisionId"] = $RevisionsId;
         // Send files to Node.js server
-        $url = "https://process.asfirj.org/external/api/combinePDF";
+        $url = "https://asfischolar.org/external/api/combinePDF";
         $wordDocURL = "https://process.asfirj.org/external/api/combineDOC";
          // Replace with your Node.js server URL
         // $url = "https://process.asfirj.org/external/api/combinePDF"; // Replace with your Node.js server URL

@@ -248,7 +248,7 @@ if (isset($tables) && $tables["size"] > 0 && isset($_FILES["tables"]["tmp_name"]
 }
 $fields["revisionId"] = $RevisionsId;
 
-        $url = "https://process.asfirj.org/external/api/combinePDF";
+        $url = "https://asfischolar.org/external/api/combinePDF";
         $wordDocURL = "https://process.asfirj.org/external/api/combineDOC";
          // Replace with your Node.js server URL
         // $url = "https://asfischolar.org/external/api/combinePDF"; // Replace with your Node.js server URL

@@ -19,6 +19,18 @@ function UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title
         $stmt = $con->prepare("UPDATE `submissions` SET `article_type`= ?,`discipline`=?,`title`=?,`manuscript_file`=?,`document_file`=?,`tracked_manuscript_file`=?,`cover_letter_file`=?,`tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?,`abstract`=?,`corresponding_authors_email`=?,`article_id`=?,`revision_id`=?,`revisions_count`=?,`previous_manuscript_id`=?,`status`=? WHERE `revision_id` = ?");
         $stmt->bind_param("sssssssssssssssisss", $type, $discipline, $title, $combinedFilename, $combinedDocFile, $trackedManuscriptFileName, $cover_letter_file, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $RevisionsId, $revisionsCount, $previousManuscriptID, $revisionStatus, $RevisionsId);
         $stmt->execute();
+
+
+        // Update the status of the main submitted manuscript 
+        // UPdaet the Status 
+        $stmt = $con->prepare("UPDATE `submissions` SET `status` = ? WHERE `article_id` = ?");
+        if(!$stmt){
+            echo json_encode(array("status" => "error", "message" => $stmt->error));
+        }
+        $stmt->bind_param("ss",$revisionStatus, $articleID);
+        $stmt->execute();
+
+        // Send final response 
         $response = array("status"=>"success", "message"=>"Submission Successful $revisionStatus");
         echo json_encode($response);
     }else{

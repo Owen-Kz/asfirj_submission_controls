@@ -95,6 +95,20 @@ if(isset($_POST["previous_id"])){
 $previousManuscriptID = $_POST["previous_id"];
 }
 
+
+$authorsPrefix = [];
+$authors_firstname = [];
+$authors_lastname = [];
+$authors_other_name = [];
+$affiliation = [];
+$affiliation_country = [];
+$affiliation_city = [];
+$authorEmail = [];
+$authors_orcid = [];
+$membership_id = [];
+
+
+
 if(isset($_POST["authors_prefix"])){
     $authorsPrefix = $_POST["authors_prefix"];
     $authors_firstname = $_POST["authors_first_name"];

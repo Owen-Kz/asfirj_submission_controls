@@ -8,7 +8,7 @@ function UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title
     include "../backend/createCoAuthor.php";
     
     $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`,`revision_id`,`revisions_count`, `discipline`, `title`, `manuscript_file`, `document_file`, `cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `tracked_manuscript_file`, `previous_manuscript_id`) VALUES(?,?,?, ?, ?, ?, ?, ?, ?,?, ?,?,?,?, ?, ?, ?)");
-    $stmt->bind_param("ssissssssssssss", $type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename,$combinedDocFile, $cover_letter_file,  $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $trackedManuscriptFileName, $previousManuscriptID);
+    $stmt->bind_param("ssissssssssssssss", $type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename,$combinedDocFile, $cover_letter_file,  $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $trackedManuscriptFileName, $previousManuscriptID);
     if($stmt->execute()){
         // UPdaet the Status 
         $stmt = $con->prepare("UPDATE `submissions` SET `status` = ? WHERE `article_id` = ?");

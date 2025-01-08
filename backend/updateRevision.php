@@ -7,6 +7,22 @@ function UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title
     include "../backend/addSuggestedReviewers.php";
     include "../backend/createCoAuthor.php";
     
+    // First check if the submission already exists 
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `revision_id` = ? ");
+    if(!$stmt){
+        echo json_encode(array("status" => "error", "message" => $stmt->error));
+    }
+    $stmt->bind_param("s", $RevisionsId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $stmt = $con->prepare("UPDATE `submissions` SET `article_type`= ?,`discipline`=?,`title`=?,`manuscript_file`=?,`document_file`=?,`tracked_manuscript_file`=?,`cover_letter_file`=?,`tables`=?,`figures`=?,`graphic_abstract`=?,`supplementary_material`=?,`abstract`=?,`corresponding_authors_email`=?,`article_id`=?,`revision_id`=?,`revisions_count`=?,`previous_manuscript_id`=?,`status`=? WHERE `revision_id` = ?");
+        $stmt->bind_param("sssssssssssssssisss", $type, $discipline, $title, $combinedFilename, $combinedDocFile, $trackedManuscriptFileName, $cover_letter_file, $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $RevisionsId, $revisionsCount, $previousManuscriptID, $revisionStatus, $RevisionsId);
+        $stmt->execute();
+        $response = array("status"=>"success", "message"=>"Submission Successful $revisionStatus");
+        echo json_encode($response);
+    }else{
+        // Create a new revion if the old one does not exist 
     $stmt = $con->prepare("INSERT INTO `submissions` (`article_type`,`revision_id`,`revisions_count`, `discipline`, `title`, `manuscript_file`, `document_file`, `cover_letter_file`, `tables`, `figures`, `graphic_abstract`, `supplementary_material`, `abstract`, `corresponding_authors_email`, `article_id`, `tracked_manuscript_file`, `previous_manuscript_id`) VALUES(?,?,?, ?, ?, ?, ?, ?, ?,?, ?,?,?,?, ?, ?, ?)");
     $stmt->bind_param("ssissssssssssssss", $type,$RevisionsId, $revisionsCount, $discipline, $title, $combinedFilename,$combinedDocFile, $cover_letter_file,  $tablesName, $figuresName, $abstractFileName, $supplementsFileName, $abstract, $corresponding_author, $articleID, $trackedManuscriptFileName, $previousManuscriptID);
     if($stmt->execute()){
@@ -139,4 +155,5 @@ function UpdateRevision($type,$RevisionsId, $revisionsCount, $discipline, $title
         echo json_encode($response);
         exit;
     }
+}
 }

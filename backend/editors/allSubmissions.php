@@ -6,12 +6,26 @@ include "./isAdminAccount.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 $adminId = $data["admin_id"];
-if(isset($adminId)){
+if (isset($adminId)) {
     $isAdminAccount = isAdminAccount($adminId);
-    if($isAdminAccount){
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `status` = 'submitted' OR `status` = 'correction_submitted' OR `status` = 'submitted_for_review' OR `status` = 'review_submitted' OR `status` = 'accepted'  OR `status` = 'revision_submitted' OR `status` = 'submitted_for_edit' ORDER BY `id` DESC");
-        if(!$stmt){
-    echo json_encode(array("error" => $stmt->error));
+    if ($isAdminAccount) {
+        $stmt = $con->prepare("SELECT s.*
+                    FROM submissions s
+                    INNER JOIN (
+                        SELECT 
+                            article_id,
+                            title,
+                            MAX(revision_id) AS max_revision_id
+                        FROM submissions
+                        GROUP BY article_id, title
+                    ) grouped
+                    ON s.article_id = grouped.article_id
+                    AND s.title = grouped.title
+                    AND s.revision_id = grouped.max_revision_id
+                    ORDER BY s.id DESC;
+                    ");
+        if (!$stmt) {
+            echo json_encode(array("error" => $stmt->error));
         }
         $stmt->execute();
         $result = $stmt->get_result();
@@ -29,20 +43,20 @@ if(isset($adminId)){
             }
             $submissions[] = $row;
         }
-        
+
 
         // var_dump($submissions);
 
-$json = json_encode(array("success" => "Admin Account", "submissions" => $submissions));
-if ($json === false) {
-    echo json_last_error_msg();
-} else {
-    echo $json;
-}
+        $json = json_encode(array("success" => "Admin Account", "submissions" => $submissions));
+        if ($json === false) {
+            echo json_last_error_msg();
+        } else {
+            echo $json;
+        }
 
-    }else{
-    echo json_encode(array("error" => "Not Admin Account"));
+    } else {
+        echo json_encode(array("error" => "Not Admin Account"));
     }
-}else{
+} else {
     echo json_encode(array("error" => "Invalid Parameters"));
 }

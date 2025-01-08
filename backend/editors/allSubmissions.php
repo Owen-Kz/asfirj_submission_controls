@@ -16,7 +16,7 @@ if (isset($adminId)) {
                             article_id,
                             title,
                             MAX(revision_id) AS max_revision_id
-                        FROM submissions
+                        FROM submissions WHERE title != ''
                         GROUP BY article_id, title
                     ) grouped
                     ON s.article_id = grouped.article_id

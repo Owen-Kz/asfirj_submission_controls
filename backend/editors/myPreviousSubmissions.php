@@ -16,7 +16,7 @@ if (($pos = strpos($revisionID, '.R')) !== false) {
 if(isset($adminId)){
     $isAdminAccount = isAdminAccount($adminId);
     if($isAdminAccount){
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `status` != 'saved_for_later' AND `status` != 'revision_saved' AND 'status' != 'returned' AND `article_id` = ? AND `revision_id` != ? ORDER BY `id` DESC");
+        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `status` != 'saved_for_later' AND `status` != 'revision_saved' AND `status` != 'returned' AND `article_id` = ? AND `revision_id` != ? AND `title` != '' ORDER BY `id` DESC");
         if(!$stmt){
         echo json_encode(array("error" => $stmt->error));
         }

@@ -14,7 +14,7 @@ if (($pos = strpos($revisionID, '.R')) !== false) {
 if (isset($adminId)) {
     $isAdminAccount = isAdminAccount($adminId);
     if ($isAdminAccount) {
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `revision_id` != ?
+        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `revision_id` != ? AND title != ''
                     ");
         if (!$stmt) {
             echo json_encode(array("error" => $stmt->error));

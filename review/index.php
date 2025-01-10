@@ -38,7 +38,7 @@ rename("../uploads/reviews/". $_FILES[$outputFile]["name"], "../uploads/reviews/
 $Article_id = $_POST["article_id"];
 $Review_Id = "ASFIRJ_rev_".date("Y")."_".bin2hex(random_bytes(7));
 $Reviewed_by = $_POST["reviewed_by"];
-
+$reviewerEmail = $Reviewed_by;
 $one_paragraph_comment = $_POST["paragraph_summary"]; 
 
 $one_paragraph_file = "";
@@ -226,6 +226,9 @@ if(isset($Article_id) && isset($Review_Id)){
         $stmt->execute();
             // update the submission status in the table 
             if($reviewStatus === "review_submitted"){
+                $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = ? WHERE `invitation_link` =? AND `invited_user` = ?");
+                $stmt->bind_param("sss", $reviewStatus, $Article_id, $reviewerEmail);
+                $stmt->execute();
                UpdateSubmissionsTable($Article_id, $reviewStatus);
             }
     $response = array("status" => "success", "message" => "Review Submitted successfully");

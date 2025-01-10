@@ -165,7 +165,7 @@ EOT;
             return true;
         } catch (\Brevo\Client\ApiException $e) {
 
-            $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage() . "\n");
+            $response = array("status"=>"error", 'message' => 'Caught exception: ' . $e->getMessage() . "\n");
 
             echo json_encode($response);
 

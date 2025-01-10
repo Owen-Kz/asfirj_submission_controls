@@ -9,20 +9,21 @@ $adminId = $data["admin_id"];
 if (isset($adminId)) {
     $isAdminAccount = isAdminAccount($adminId);
     if ($isAdminAccount) {
-        $stmt = $con->prepare("SELECT s.*
+        $stmt = $con->prepare("WITH RankedSubmissions AS (
+                    SELECT 
+                        s.*,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY s.article_id 
+                            ORDER BY s.revision_id DESC, s.process_start_date DESC
+                        ) AS row_num
                     FROM submissions s
-                    INNER JOIN (
-                        SELECT 
-                            article_id,
-                            title,
-                            MAX(revision_id) AS max_revision_id
-                        FROM submissions WHERE title != ''
-                        GROUP BY article_id, title
-                    ) grouped
-                    ON s.article_id = grouped.article_id
-                    AND s.title = grouped.title
-                    AND s.revision_id = grouped.max_revision_id
-                    ORDER BY s.id DESC;
+                    WHERE s.title != ''
+                )
+                SELECT *
+                FROM RankedSubmissions
+                WHERE row_num = 1
+                ORDER BY process_start_date DESC;
+
                     ");
         if (!$stmt) {
             echo json_encode(array("error" => $stmt->error));

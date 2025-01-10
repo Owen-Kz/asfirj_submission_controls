@@ -167,6 +167,8 @@ EOT;
 
             $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage() . "\n");
 
+            echo "'Caught exception: ' . $e->getMessage() . "\n"";
+
             return false;
         }
     } else {

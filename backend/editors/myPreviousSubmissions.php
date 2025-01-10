@@ -20,7 +20,7 @@ if(isset($adminId)){
         if(!$stmt){
         echo json_encode(array("error" => $stmt->error));
         }
-        $stmt->bind_param("ss", $mainId, $revisionID );
+        $stmt->bind_param("ss", $revisionID, $mainId);
         $stmt->execute();
         $result = $stmt->get_result();
         $submissions = array();

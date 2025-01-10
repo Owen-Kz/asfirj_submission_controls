@@ -8,19 +8,20 @@ $data = json_decode(file_get_contents("php://input"), true);
 $adminId = $data["admin_id"];
 $revisionID = $data["item_id"];
 $mainId = $revisionID;
-
-if (($pos = strpos($revisionID, '.R')) !== false) {
-    $mainId = substr($revisionID, 0, $pos);
-}
+// if (($pos = strpos($revisionID, '.R')) !== false) {
+//     $revisionID = substr($revisionID, 0, $pos);
+//     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `revision_id` != ? AND title != ''");
+// }else{
+//     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ?  AND title != ''");
+// }
 if (isset($adminId)) {
     $isAdminAccount = isAdminAccount($adminId);
     if ($isAdminAccount) {
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `revision_id` != ? AND title != ''
-                    ");
+        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND title != ''");
         if (!$stmt) {
             echo json_encode(array("error" => $stmt->error));
         }
-        $stmt->bind_param("ss", $mainId, $revisionID);
+        $stmt->bind_param("s", $revisionID);
         $stmt->execute();
         $result = $stmt->get_result();
         $submissions = array();

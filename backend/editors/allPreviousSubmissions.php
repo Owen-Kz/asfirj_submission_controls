@@ -17,7 +17,7 @@ $mainId = $revisionID;
 if (isset($adminId)) {
     $isAdminAccount = isAdminAccount($adminId);
     if ($isAdminAccount) {
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND title != ''");
+        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND title != '' ORDER BY `id` DESC");
         if (!$stmt) {
             echo json_encode(array("error" => $stmt->error));
         }

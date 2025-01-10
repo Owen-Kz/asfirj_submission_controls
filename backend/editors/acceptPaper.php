@@ -3,13 +3,52 @@ include "../cors.php";
 include "../db.php";
 include "../reviewerAccountEmail.php";
 include "../sendAcceptanceEmailToEditor.php";
+include "../SaveEmail.php";
+include "./uploadAttachments.php";
 
 // $_POST = json_decode(file_get_contents("php://input"), true);
-$editor = $_POST["editor"];
-$article_id = $_POST["articleId"];
-$reviewerEmail = $_POST["reviewerEmail"];
-$subject = $_POST["subject"];
-$message = $_POST["message"];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Collect POST data
+    $editor = $_POST["editor"] ?? '';
+    $article_id = $_POST["articleId"] ?? '';
+    $reviewerEmail = $_POST["reviewerEmail"] ?? '';
+    $subject = $_POST["subject"] ?? '';
+    $message = $_POST["message"] ?? '';
+
+
+
+
+
+// Collect file attachments
+$attachments = [];
+if (!empty($_FILES['attachments']['name'][0])) {
+    foreach ($_FILES['attachments']['name'] as $key => $fileName) {
+        $fileTmpPath = $_FILES['attachments']['tmp_name'][$key];
+        $fileSize = $_FILES['attachments']['size'][$key];
+        $fileError = $_FILES['attachments']['error'][$key];
+
+        if ($fileError === UPLOAD_ERR_OK) {
+            // Validate file size and type (optional)
+            if ($fileSize > 0) {
+                try {
+                    // Upload to Cloudinary and get the URL
+                    $cloudinaryUrl = uploadToCloudinary($fileTmpPath, $fileName);
+
+                    // Add the attachment details
+                    $attachments[] = [
+                        'content' => base64_encode(file_get_contents($fileTmpPath)), // This is for email attachment
+                        'name' => $fileName,
+                        'url' => $cloudinaryUrl, // Add Cloudinary URL for later use
+                    ];
+                } catch (Exception $e) {
+                    echo "Error uploading file to Cloudinary: " . $e->getMessage();
+                }
+            }
+        } else {
+            echo "Error uploading file: " . $fileName;
+        }
+    }
+}
 
 
     // Convert comma-separated CC and BCC to arrays
@@ -43,12 +82,16 @@ if(isset($editor)){
         // print_r($response);
 
         // Save the Email TO The database 
-        $stmt = $con->prepare("INSERT INTO `sent_emails` (`article_id`,`subject`, `recipient`,`sender`, `body`) VALUES (?,?,?,?,?)");
-        $stmt->bind_param('sssss',$article_id, $subject, $reviewerEmail, $editor_email, $message);
-        $stmt->execute();
+        // $stmt = $con->prepare("INSERT INTO `sent_emails` (`article_id`,`subject`, `recipient`,`sender`, `body`) VALUES (?,?,?,?,?)");
+        // $stmt->bind_param('sssss',$article_id, $subject, $reviewerEmail, $editor_email, $message);
+        // $stmt->execute();
+        $invitedFor = "";
+        saveEmailDetails($con, $reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails, $attachments, $invitedFor);
+
+        
 
         // Send the email notification to reviewer
-       if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails)){
+       if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails, $attachments)){
     // Find the Editor in chief emai$
     $stmt = $con->prepare("SELECT * FROM `editors` WHERE `editorial_level` = 'editor_in_chief'");
     $stmt->execute();
@@ -89,4 +132,7 @@ if(isset($editor)){
         $response = array("status"=>"error", "message" => "Unauthorized account");
         echo json_encode($response);
     }
+}
+} else {
+    echo "Invalid request method.";
 }

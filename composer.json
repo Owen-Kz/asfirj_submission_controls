@@ -1,6 +1,6 @@
 {
     "require": {
-        "vlucas/phpdotenv": "^5.0",
+        "vlucas/phpdotenv": "^5.6",
         "mpdf/mpdf": "^6.1",
         "setasign/fpdi": "^1.6",
         "phpoffice/phpword": "^1.2",

@@ -2,6 +2,8 @@
 include "../cors.php";
 include "../db.php";
 include "../reviewerAccountEmail.php";
+include "./uploadAttachments.php";
+include "../SaveEmail.php";
 
 // $_POST = json_decode(file_get_contents("php://input"), true);
 $editor = $_POST["editor"];
@@ -10,6 +12,37 @@ $reviewerEmail = $_POST["reviewerEmail"];
 $subject = $_POST["subject"];
 $message = $_POST["message"];
 
+    // Collect file attachments
+    $attachments = [];
+    if (!empty($_FILES['attachments']['name'][0])) {
+        foreach ($_FILES['attachments']['name'] as $key => $fileName) {
+            $fileTmpPath = $_FILES['attachments']['tmp_name'][$key];
+            $fileSize = $_FILES['attachments']['size'][$key];
+            $fileError = $_FILES['attachments']['error'][$key];
+    
+            if ($fileError === UPLOAD_ERR_OK) {
+                // Validate file size and type (optional)
+                if ($fileSize > 0) {
+                    try {
+                        // Upload to Cloudinary and get the URL
+                        $cloudinaryUrl = uploadToCloudinary($fileTmpPath, $fileName);
+    
+                        // Add the attachment details
+                        $attachments[] = [
+                            'content' => base64_encode(file_get_contents($fileTmpPath)), // This is for email attachment
+                            'name' => $fileName,
+                            'url' => $cloudinaryUrl, // Add Cloudinary URL for later use
+                        ];
+                    } catch (Exception $e) {
+                        echo "Error uploading file to Cloudinary: " . $e->getMessage();
+                    }
+                }
+            } else {
+                echo "Error uploading file: " . $fileName;
+            }
+        }
+    }
+    
     // Convert comma-separated CC and BCC to arrays
     $ccEmails = isset($_POST['ccEmail']) ? explode(',', $_POST['ccEmail']) : [];
     $bccEmails = isset($_POST['bccEmail']) ? explode(',', $_POST['bccEmail']) : [];
@@ -40,9 +73,11 @@ if(isset($editor)){
         // print_r($response);
 
         // Save the Email TO The database 
-        $stmt = $con->prepare("INSERT INTO `sent_emails` (`article_id`,`subject`, `recipient`,`sender`, `body`) VALUES (?,?,?,?,?)");
-        $stmt->bind_param('sssss',$article_id, $subject, $reviewerEmail, $editor_email, $message);
-        $stmt->execute();
+        // $stmt = $con->prepare("INSERT INTO `sent_emails` (`article_id`,`subject`, `recipient`,`sender`, `body`) VALUES (?,?,?,?,?)");
+        // $stmt->bind_param('sssss',$article_id, $subject, $reviewerEmail, $editor_email, $message);
+        // $stmt->execute();
+        $invitedFor = "";
+        saveEmailDetails($con, $reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails, $attachments, $invitedFor);
 
         // Find All REviewers And Send the emails ro them  
         $revStmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` = ? AND `status` = 'review_invitation_accepted'");
@@ -52,12 +87,12 @@ if(isset($editor)){
         if($revResult->num_rows > 0){
             while($revRow = $revResult->fetch_assoc()){
                 $revEmail = $revRow["reviewer_email"];
-                ReviewerAccountEmail($revEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails);
+                ReviewerAccountEmail($revEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails, $attachments);
             }
         }
 
         // Send the email notification to reviewer
-       if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails)){
+       if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails, $attachments)){
 
         // Create the review process entry 
         // $stmt = $con->prepare("INSERT INTO `submitted_for_review` (`article_id`, `reviewer_email`, `submitted_by`) VALUES (?,?,?)");

@@ -61,7 +61,7 @@ function convertToHTML($contentArray) {
     return $html;
 }
 
-function SendBulkEmail($RecipientEmail, $subject, $message, $editor_email, $article_id) {
+function SendBulkEmail($RecipientEmail, $subject, $message, $editor_email, $article_id, $attachments) {
     require_once __DIR__ . '/../vendor/autoload.php';
     require __DIR__ . "/../backend/exportENV.php";
     include __DIR__ . "/../backend/db.php";
@@ -113,6 +113,24 @@ function SendBulkEmail($RecipientEmail, $subject, $message, $editor_email, $arti
             $email->setTo([$recipient]);
             $email->setSubject($subject);
             $email->setHtmlContent($emailContent);
+
+            // Add attachments to the email
+            if (!empty($attachments) && is_array($attachments)) {
+                $emailAttachments = [];
+                foreach ($attachments as $attachment) {
+                    if (isset($attachment['content'], $attachment['name'])) {
+                        $emailAttachments[] = [
+                            'content' => $attachment['content'],
+                            'name' => $attachment['name'],
+                        ];
+                    } else {
+                        // Handle invalid attachment structure
+                        error_log("Invalid attachment structure: " . print_r($attachment, true));
+                    }
+                }    
+                $email->setAttachment($emailAttachments);
+            }
+
 
             $response = $apiInstance->sendTransacEmail($email);
 

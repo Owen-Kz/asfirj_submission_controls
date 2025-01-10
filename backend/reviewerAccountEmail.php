@@ -1,6 +1,7 @@
 <?php
 
-function ReviewerAccountEmail($RecipientEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails) {
+function ReviewerAccountEmail($RecipientEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails, $attachments)
+{
     require_once __DIR__ . '/../vendor/autoload.php';
     require __DIR__ . '/../backend/exportENV.php';
     include __DIR__ . '/../backend/db.php';
@@ -14,10 +15,12 @@ function ReviewerAccountEmail($RecipientEmail, $subject, $message, $editor_email
 
         $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
         $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
-            new GuzzleHttp\Client(), $config
+            new GuzzleHttp\Client(),
+            $config
         );
 
-        function convertToHTML($contentArray) {
+        function convertToHTML($contentArray)
+        {
             $html = '';
             $listOpen = false;
 
@@ -111,28 +114,47 @@ EOT;
             $recipient->setEmail($RecipientEmail);
             $email->setTo([$recipient]);
 
-              // Set CC recipients if provided
+            // Set CC recipients if provided
 
-  if (!empty($ccEmails) && count($ccEmails) > 0 && $ccEmails != [""]) {
-    $ccRecipients = [];
-    foreach ($ccEmails as $ccEmail) {
-        $ccRecipient = new \Brevo\Client\Model\SendSmtpEmailCc();
-        $ccRecipient->setEmail($ccEmail);
-        $ccRecipients[] = $ccRecipient;
-    }
-    $email->setCc($ccRecipients);
-}
+            if (!empty($ccEmails) && count($ccEmails) > 0 && $ccEmails != [""]) {
+                $ccRecipients = [];
+                foreach ($ccEmails as $ccEmail) {
+                    $ccRecipient = new \Brevo\Client\Model\SendSmtpEmailCc();
+                    $ccRecipient->setEmail($ccEmail);
+                    $ccRecipients[] = $ccRecipient;
+                }
+                $email->setCc($ccRecipients);
+            }
 
-// Set BCC recipients if provided
-if (!empty($bccEmails) && count($bccEmails) > 0 && $bccEmails != [""]) {
-    $bccRecipients = [];
-    foreach ($bccEmails as $bccEmail) {
-        $bccRecipient = new \Brevo\Client\Model\SendSmtpEmailBcc();
-        $bccRecipient->setEmail($bccEmail);
-        $bccRecipients[] = $bccRecipient;
-    }
-    $email->setBcc($bccRecipients);
-}
+            // Set BCC recipients if provided
+            if (!empty($bccEmails) && count($bccEmails) > 0 && $bccEmails != [""]) {
+                $bccRecipients = [];
+                foreach ($bccEmails as $bccEmail) {
+                    $bccRecipient = new \Brevo\Client\Model\SendSmtpEmailBcc();
+                    $bccRecipient->setEmail($bccEmail);
+                    $bccRecipients[] = $bccRecipient;
+                }
+                $email->setBcc($bccRecipients);
+            }
+
+            // Add attachments to the email
+            if (!empty($attachments) && is_array($attachments)) {
+                $emailAttachments = [];
+                foreach ($attachments as $attachment) {
+                    if (isset($attachment['content'], $attachment['name'])) {
+                        $emailAttachments[] = [
+                            'content' => $attachment['content'],
+                            'name' => $attachment['name'],
+                        ];
+                    } else {
+                        // Handle invalid attachment structure
+                        error_log("Invalid attachment structure: " . print_r($attachment, true));
+                    }
+                }
+                $email->setAttachment($emailAttachments);
+            }
+
+
             $result = $apiInstance->sendTransacEmail($email);
 
             // Update database status
@@ -142,7 +164,7 @@ if (!empty($bccEmails) && count($bccEmails) > 0 && $bccEmails != [""]) {
 
             return true;
         } catch (\Brevo\Client\ApiException $e) {
-         
+
             $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage() . "\n");
 
             return false;

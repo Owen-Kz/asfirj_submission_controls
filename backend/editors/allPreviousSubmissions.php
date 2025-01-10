@@ -8,8 +8,9 @@ $data = json_decode(file_get_contents("php://input"), true);
 $adminId = $data["admin_id"];
 $revisionID = $data["item_id"];
 $mainId = $revisionID;
+
 if (($pos = strpos($revisionID, '.R')) !== false) {
-    $revisionID = substr($revisionID, 0, $pos);
+    $mainId = substr($revisionID, 0, $pos);
 }
 if (isset($adminId)) {
     $isAdminAccount = isAdminAccount($adminId);
@@ -19,7 +20,7 @@ if (isset($adminId)) {
         if (!$stmt) {
             echo json_encode(array("error" => $stmt->error));
         }
-        $stmt->bind_param("ss", $revisionID, $mainId);
+        $stmt->bind_param("ss", $mainId, $revisionID);
         $stmt->execute();
         $result = $stmt->get_result();
         $submissions = array();

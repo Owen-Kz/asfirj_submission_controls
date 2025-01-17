@@ -9,7 +9,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     // GEt the Main submission Id 
     $mainSubmissionId = "";
 
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ?  AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ?  AND (`status` = 'saved_for_later' OR `status` = 'revision_saved') AND `corresponding_authors_email` = ?");
     if(!$stmt){
         echo $stmt->error;
         exit;
@@ -33,7 +33,7 @@ function UpdateTheSubmission($type,$RevisionsId, $revisionsCount, $discipline, $
     }
     // Frist check if the submission exist and is ready has been saved earlier 
 
-    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ?  AND `status` = 'saved_for_later' AND `corresponding_authors_email` = ?");
+    $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `title` = ?  AND (`status` = 'saved_for_later' OR `status` = 'revision_saved') AND `corresponding_authors_email` = ?");
     if(!$stmt){
         echo $stmt->error;
         exit;

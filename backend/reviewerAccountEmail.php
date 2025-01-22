@@ -109,11 +109,7 @@ EOT;
             $sender->setName('ASFI Research Journal');
             $email->setSender($sender);
 
-            // Set recipient
-            $recipient = new \Brevo\Client\Model\SendSmtpEmailTo();
-            $recipient->setEmail($RecipientEmail);
-            $email->setTo([$recipient]);
-
+          
             // Set CC recipients if provided
 
             if (!empty($ccEmails) && count($ccEmails) > 0 && $ccEmails != [""]) {
@@ -137,6 +133,11 @@ EOT;
                 $email->setBcc($bccRecipients);
             }
 
+              // Set recipient
+              $recipient = new \Brevo\Client\Model\SendSmtpEmailTo();
+              $recipient->setEmail($RecipientEmail);
+              $email->setTo([$recipient]);
+  
             // Add attachments to the email
             if (!empty($attachments) && is_array($attachments)) {
                 $emailAttachments = [];

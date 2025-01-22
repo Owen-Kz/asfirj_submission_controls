@@ -141,7 +141,7 @@ if(isset($title)){
  
 
     // Prepare files for sending to Node.js server
-    if($submissionStatus === "saved_for_later"){
+    if($submissionStatus === "saved_for_later" || $submissionStatus === "revision_saved"){
         $otherFiles = [];
         // Logic For file upload should go here 
         if(isset($_FILES["cover_letter"]) && isset($_FILES["cover_letter"]["size"]) > 0 && isset($_FILES["cover_letter"]["tmp_name"])){

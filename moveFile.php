@@ -31,7 +31,7 @@ function MoveFile($outputFile, $designatedDirectory, $newFilename)
 
         // Copy the file to create a renamed version, keeping the original file
         if (!copy($targetFile, $renamedFilePath)) {
-            echo "Error creating the renamed copy of the file.";
+            // echo "Error creating the renamed copy of the file.";
         }
 
     } else {

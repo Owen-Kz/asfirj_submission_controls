@@ -269,8 +269,8 @@ if(isset($title)){
         $fields["revisionId"] = $RevisionsId;
     // if the submission status is not save for later then send the files to nodeJs for processing and update the submission table 
     // Send files to Node.js server
-            $url = "https://asfischolar.org/external/api/combinePDF";
-        $wordDocURL = "https://process.asfirj.org/external/api/combineDOC";
+            $url = "http://localhost:3600/external/api/combinePDF";
+        $wordDocURL = "http://localhost:31000/external/api/combineDOC";
          // Replace with your Node.js server URL
         // $url = "https://process.asfirj.org/external/api/combinePDF"; // Replace with your Node.js server URL
 

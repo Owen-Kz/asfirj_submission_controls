@@ -51,8 +51,8 @@ function SendAccountEmail($RecipientEmail, $password) {
             <body>
                 <h2> Hi, $prefix $RecipientName</h2>
                 <p> A submission affiliated to you was made on the ASFIRJ platform </p>
-                <p>Please <a href="https://authors.asfirj.org/validate?a=$encryptedButton">click here</a> to login and view this submission. </p>
-                <p>Or paste this <a href="https://authors.asfirj.org/validate?a=$encryptedButton">link</a> in your browser</p>
+                <p>Please <a href="https://asfirj.org/verify?a=$encryptedButton">click here</a> to login and view this submission. </p>
+                <p>Or paste this <a href="https://asfirj.org/verify?a=$encryptedButton">link</a> in your browser</p>
                 <p>Your Password is <h1>$password</h1></p>
                 <footer>
                     <p>African Science Research Journal</p>

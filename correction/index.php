@@ -156,11 +156,24 @@ if(isset($title)){
         if(isset($_FILES["manuscript_file"]) && isset($_FILES["manuscript_file"]["size"]) > 0 && isset($_FILES["manuscript_file"]["tmp_name"])){
             $fileExtensionManuscript = pathinfo($_FILES["manuscript_file"]["name"], PATHINFO_EXTENSION);
 
-            $combinedFilename = "manuscriptFile-".$timestamp . '.' . $fileExtensionManuscript;
+            $fileExtensionManuscript = pathinfo($_FILES["manuscript_file"]["name"], PATHINFO_EXTENSION);
 
-            $originalFilename =  "manuscriptFile-".$timestamp . '.' . $fileExtensionManuscript;
-
-            MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $combinedFilename);
+            // Get the original file name without extension
+            $originalName = pathinfo($_FILES["manuscript_file"]["name"], PATHINFO_FILENAME);
+            
+            // Remove special characters and whitespace, keep alphanumeric, dashes, and underscores
+            $sanitizedFilename = preg_replace('/[^A-Za-z0-9_-]/', '', $originalName);
+            
+            // Ensure the filename is not empty after sanitization
+            if (empty($sanitizedFilename)) {
+                $sanitizedFilename = "manuscript";
+            }
+            
+            $combinedFilename = $sanitizedFilename . "-" . $timestamp . '.' . $fileExtensionManuscript;
+            $originalFilename = $combinedFilename;
+            
+            MoveFile("manuscript_file", __DIR__ . "/uploadedFiles", $combinedFilename);
+            
             // MoveFile("manuscript_file",  __DIR__."/uploadedFiles", $originalFilename);
             array_push($otherFiles,  "https://cp.asfirj.org/uploadedFiles/". $combinedFilename);
         

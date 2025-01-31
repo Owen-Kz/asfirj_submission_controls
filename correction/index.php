@@ -300,13 +300,11 @@ if(isset($title)){
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification (insecure)
 
 
-        $response = curl_exec($ch);
-
-        
+        $responseCURL = curl_exec($ch);
         if (curl_errno($ch)) {
             // echo 'Error:' . curl_error($ch);
-            $response = array("status" => "error", "message" => 'Curl Error:' . curl_error($ch));
-            echo json_encode($response);
+            $responseMain = array("status" => "error", "message" => 'Curl Error:' . curl_error($ch));
+            echo json_encode($responseMain);
             exit;
         }
         curl_close($ch);
@@ -332,8 +330,8 @@ if(isset($title)){
         // }
         // curl_close($ch_WORD);
 
-        if ($response) {
-            $responseDecoded = json_decode($response, true);
+        if ($responseCURL) {
+            $responseDecoded = json_decode($responseCURL, true);
             // $responseDecoded_DOC = json_decode($response_DOC, true);
             // if ($responseDecoded_DOC) {
             //     $combinedDocFile = $responseDecoded_DOC['filename'];

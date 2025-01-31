@@ -314,7 +314,12 @@ if(isset($title)){
         //     exit;
         // }
         // curl_close($ch_WORD);
-
+        if ($responseCURL === false) {
+            die("cURL error: " . curl_error($ch));
+        } else {
+            echo "Response from Node.js: " . $responseCURL;
+        }
+        
         if ($responseCURL) {
             $responseDecoded = json_decode($responseCURL, true);
             // $responseDecoded_DOC = json_decode($response_DOC, true);

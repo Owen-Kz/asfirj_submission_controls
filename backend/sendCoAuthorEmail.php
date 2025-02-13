@@ -43,8 +43,8 @@ function SendCoAuthorEmail($RecipientEmail, $password) {
                     <li>Email: <b>$RecipientEmail</b></li>
                     <li>Password: <b>$password</b></li>
                 </ul>
-                <p><a href='https://authors.asfirj.org/verify?a=$encryptedButton'>click here</a> to verify your account and login.</p>
-                <p>Or paste this <a href='https://authors.asfirj.org/verify?a=$encryptedButton'>https://authors.asfirj.org/verify?a=$encryptedButton</a> link in your browser.</p>
+                <p><a href='https://process.asfirj.org/verify?e=$encryptedButton'>click here</a> to verify your account and login.</p>
+                <p>Or paste this <a href='https://process.asfirj.org/verify?e=$encryptedButton'>https://process.asfirj.org/verify?e=$encryptedButton</a> link in your browser.</p>
                 <p>You can always come back to update your password and other required information from here: <a href='https://asfirj.org/portal/updateAccount?e=$encryptedButton'>https://asfirj.org/portal/updateAccount?e=$encryptedButton</a></p>
             ";
 

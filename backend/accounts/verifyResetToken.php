@@ -7,7 +7,7 @@ $email = $data["email"];
 $resetToken = $data["token"];
 
 if($email && $resetToken){
-    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`email`) = ? AND `resetToken` = ?");
+    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ? AND `resetToken` = ?");
     $stmt->bind_param("ss", $email, $resetToken);
     $stmt->execute();
     $result = $stmt->get_result();

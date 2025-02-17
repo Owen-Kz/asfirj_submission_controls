@@ -9,7 +9,7 @@ include "../db.php";
 $email = $_GET["e"];
 
 
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`email`) = ?");
+$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ?");
 if(!$stmt){
     echo $stmt->error;
 }
@@ -24,7 +24,7 @@ if(mysqli_num_rows($result) > 0){
         echo json_encode($response);
     }
     else{
-        $stmt = $con->prepare("UPDATE `authors_account` SET `account_status` = 'verified' WHERE md5(`email`) = ?");
+        $stmt = $con->prepare("UPDATE `authors_account` SET `account_status` = 'verified' WHERE md5(`id`) = ?");
         if(!$stmt){
             echo $stmt->error;
         }

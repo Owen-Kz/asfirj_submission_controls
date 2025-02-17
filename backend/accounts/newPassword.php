@@ -10,7 +10,7 @@ $newPassword = $data["password"];
 
 if($data){
     $encryptedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`email`) =? AND md5(`resetToken`) =?");
+    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) =? AND md5(`resetToken`) =?");
     $stmt->bind_param("ss", $email, $resetToken);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -19,13 +19,13 @@ if($data){
         $row = $result->fetch_assoc();
         $is_editor = $row["is_editor"];
         // Updaet the Authors Password
-        $stmt = $con->prepare("UPDATE `authors_account` SET `password` = ? WHERE md5(`email`) =?");
+        $stmt = $con->prepare("UPDATE `authors_account` SET `password` = ? WHERE md5(`id`) =?");
         $stmt->bind_param("ss", $encryptedPassword, $email);
         $stmt->execute();
 
         // Update the Editors Password if the person is an editor 
         if($is_editor === "yes"){
-            $stmt = $con->prepare("UPDATE `editors` SET `password` =? WHERE md5(`email`) =?");
+            $stmt = $con->prepare("UPDATE `editors` SET `password` =? WHERE md5(`id`) =?");
             $stmt->bind_param("ss", $encryptedPassword, $email);
             // $stmt->execute()
             if($stmt->execute()){

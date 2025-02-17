@@ -10,7 +10,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 $email = $data["encrypted"];
 
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`email`) = ?");
+$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ?");
 if(!$stmt){
     print_r($con->error);
 }else{

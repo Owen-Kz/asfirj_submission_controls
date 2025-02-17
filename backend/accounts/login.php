@@ -40,6 +40,7 @@ if(isset($pass) && isset($email_post)){
         // Get and verify the users password if the account exists  
         $row = mysqli_fetch_array($run_query);
         $storedHashedPassword = $row["password"];
+        $userMainID = $row["id"];
 
         if($row["account_status"] !== "verified"){
 
@@ -61,7 +62,7 @@ if(isset($pass) && isset($email_post)){
 
         // $HOTEL =  $_SESSION["Hotel_name"];
 
-        $response = array('status' => 'success', 'message' => 'Logged in successfully', 'user_data' => $row, 'ip'=> $ip_add, 'userEmail' => md5($userID));
+        $response = array('status' => 'success', 'message' => 'Logged in successfully', 'user_data' => $row, 'ip'=> $ip_add, 'userEmail' => md5($userMainID));
         echo json_encode($response);
     }else{
         $response = array('status' => 'error', 'message' => 'Invalid Credentials', 'user_data' => "[]");

@@ -22,7 +22,8 @@ function SendAccountEmail($RecipientEmail, $password) {
             $prefix = $row["prefix"];
             $RecipientName = $row["firstname"];
             $id = $row["id"];
-            $encryptedButton = md5($id);
+            $email = $row["email"];
+            $encryptedButton = md5($email);
 
             $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
             $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(

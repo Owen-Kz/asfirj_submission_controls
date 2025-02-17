@@ -6,7 +6,7 @@ include "../db.php";
 $userId = $_GET["u_id"];
 
 if(isset($userId)){
-    $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submitted_for_review` WHERE md5(`reviewer_email`) = ? AND `status` = 'review_invitation_accepted'");
+    $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submitted_for_review` WHERE `reviewer_email` = ? AND `status` = 'review_invitation_accepted'");
     $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();

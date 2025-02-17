@@ -27,7 +27,8 @@ function SendCoAuthorEmail($RecipientEmail, $password) {
             $email = $row["email"];
             $prefix = $row["prefix"];
             $RecipientName = $row["firstname"];
-            $encryptedButton = md5($RecipientEmail);
+            $id = $row["id"];
+            $encryptedButton = md5($email);
 
             // Configure the Brevo client
             $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);

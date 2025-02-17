@@ -6,7 +6,7 @@ include "../db.php";
 $userId = $_GET["u_id"];
 
 if(isset($userId)){
-    $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE md5(`authors_email`) = ?");
+    $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ?");
     $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -16,7 +16,7 @@ if(isset($userId)){
 
         while ($row = $result->fetch_assoc()) {
             $articleId = $row["submission_id"];
-            $stmt = $con->prepare("SELECT * FROM `submissions` WHERE md5(`corresponding_authors_email`) != ? AND `article_id` = ? AND `status` != 'saved_for_later'");
+            $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `corresponding_authors_email` != ? AND `article_id` = ? AND `status` != 'saved_for_later'");
             
             if (!$stmt) {
                 $response = array("error" => $con->error, "articles" => []);

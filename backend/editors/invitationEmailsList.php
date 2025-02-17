@@ -8,7 +8,7 @@ include "./isAdminAccount.php";
 if(isset($_GET["u_id"])){
     $isAdmin = isAdminAccount($_GET['u_id']);
     if($isAdmin){
-        $stmt = $con->prepare("SELECT * FROM `sent_emails` WHERE md5(`sender`) = ? AND `email_for` = 'To Edit' ORDER BY `id` DESC");
+        $stmt = $con->prepare("SELECT * FROM `sent_emails` WHERE `sender` = ? AND `email_for` = 'To Edit' ORDER BY `id` DESC");
         $stmt->bind_param("s", $_GET["u_id"]);
         $stmt->execute();
         $result = $stmt->get_result();

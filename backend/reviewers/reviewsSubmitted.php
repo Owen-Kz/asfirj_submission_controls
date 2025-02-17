@@ -8,7 +8,7 @@ include "../db.php";
 // $email = $data["encrypted"];
 $email = $_GET["user"];
 
-$stmt = $con->prepare("SELECT * FROM `reviews` WHERE md5(`reviewer_email`) = ? AND `review_status` = 'review_submitted' OR `review_status` = 'review_completed'");
+$stmt = $con->prepare("SELECT * FROM `reviews` WHERE `reviewer_email` = ? AND `review_status` = 'review_submitted' OR `review_status` = 'review_completed'");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();

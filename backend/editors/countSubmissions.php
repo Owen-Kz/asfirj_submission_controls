@@ -16,7 +16,7 @@ if(isset($userId)){
         $response = array("success"=>"CountSuccess", "count"=> $count);
         echo json_encode($response);
     }else{
-        $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submitted_for_edit` WHERE md5(`editor_email`) = ? AND `status` = 'edit_invitation_accepted'");
+        $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submitted_for_edit` WHERE `editor_email` = ? AND `status` = 'edit_invitation_accepted'");
         $stmt->bind_param("s", $userId);
         $stmt->execute();
         $result = $stmt->get_result();

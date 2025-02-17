@@ -8,7 +8,7 @@ $editorId = $data["editorId"];
 
 if ($editorId) {
     // Find the Authors for the article 
-    $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`email`) = ?");
+    $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`id`) = ?");
     if (!$stmt) {
         echo $stmt->error;
         exit;

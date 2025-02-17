@@ -5,7 +5,7 @@ include "../db.php";
 $data = json_decode(file_get_contents("php://input"), true);
 $accountID = $data["id"];
 if($accountID){
-$stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`email`) = ? ");
+$stmt = $con->prepare("SELECT * FROM `editors` WHERE `email` = ? ");
 if(!$stmt){
     echo json_encode(array("error" => $stmt->error));
     exit;

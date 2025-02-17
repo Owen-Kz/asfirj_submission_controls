@@ -51,7 +51,7 @@ $invitedFor = "To Edit";
 
 
 if(isset($editor)){
-    $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`email`) = ? AND (`editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?)");
+    $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`id`) = ? AND (`editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?)");
 
     $editorialLevelOne = "editor_in_chief";
     $editorialLevelTwo = "associate_editor";

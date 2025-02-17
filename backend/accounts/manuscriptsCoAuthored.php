@@ -9,7 +9,7 @@ $useremail = $data["user"];
 
 if($useremail){
     // Check if the user has any submissions under thier email 
-    $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE md5(`authors_email`) = ?");
+    $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ?");
     if(!$stmt){
         echo json_encode(array("error" => $stmt->error));
     }
@@ -25,7 +25,7 @@ if($useremail){
 
         while ($row = $result->fetch_assoc()) {
             $articleId = $row["submission_id"];
-            $stmt = $con->prepare("SELECT * FROM `submissions` WHERE md5(`corresponding_authors_email`) != ? AND `article_id` = ? AND `status` != 'saved_for_later' ORDER BY `id` DESC");
+            $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `corresponding_authors_email` != ? AND `article_id` = ? AND `status` != 'saved_for_later' ORDER BY `id` DESC");
             
             if (!$stmt) {
                 $response = array("error" => $con->error, "articles" => []);

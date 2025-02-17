@@ -10,11 +10,11 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 $email = $data["encrypted"];
 
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ? OR `email` = ?");
+$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ? OR `email` = ? OR md5(`email`) = ?");
 if(!$stmt){
     print_r($con->error);
 }else{
-$stmt->bind_param("ss", $email, $email);
+$stmt->bind_param("sss", $email, $email, $email);
     $stmt->execute();
     $result = $stmt->get_result();
 

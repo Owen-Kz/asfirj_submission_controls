@@ -158,7 +158,7 @@ if(isset($Article_id) && isset($Review_Id)){
         $Reviewed_by     
     );
     if($stmt->execute()){
-        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = ? WHERE `article_id` =? AND md5(`reviewer_email`) = ?");
+        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = ? WHERE `article_id` =? AND `reviewer_email` = ?");
         $stmt->bind_param("sss", $reviewStatus, $Article_id,$Reviewed_by);
         $stmt->execute();
         if($reviewStatus === "review_submitted"){

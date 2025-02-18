@@ -5,11 +5,11 @@ include "../db.php";
 include "./isAdminAccount.php";
 
 // session_start();
-if(isset($_GET["u_id"])){
-    $isAdmin = isAdminAccount($_GET['u_id']);
+if(isset($_SESSION["user_email"])){
+    $isAdmin = isAdminAccount($_SESSION["user_email"]);
     if($isAdmin){
         $stmt = $con->prepare('SELECT * FROM `sent_emails` WHERE `sender` = ? ORDER BY `id` DESC');
-        $stmt->bind_param("s", $_GET["u_id"]);
+        $stmt->bind_param("s", $_SESSION["user_email"]);
         $stmt->execute();
         $result = $stmt->get_result();
         if($result->num_rows > 0){

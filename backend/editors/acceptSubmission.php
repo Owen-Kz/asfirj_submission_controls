@@ -2,11 +2,11 @@
 include "../cors.php";
 include "../db.php";
 $data = json_decode(file_get_contents("php://input"), true);
-$editor - $data["editor"];
+$editor - $_SESSION["user_email"];
 $article_id = $data["articleId"];
 
 if(isset($editor)){
-    $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`id`) = ? AND `editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?");
+    $stmt = $con->prepare("SELECT * FROM `editors` WHERE `email` = ? AND `editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?");
 
     $editorialLevelOne = "chief_editor";
     $editorialLevelTwo = "associate_editor";

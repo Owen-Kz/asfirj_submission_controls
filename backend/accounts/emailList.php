@@ -7,7 +7,7 @@ include "../db.php";
 if(isset($_GET["u_id"])){
 
         $stmt = $con->prepare('SELECT * FROM `sent_emails` WHERE `recipient` = ? ORDER BY `id` DESC');
-        $stmt->bind_param("s", $_GET["u_id"]);
+        $stmt->bind_param("s", $_SESSION["user_email"]);
         $stmt->execute();
         $result = $stmt->get_result();
         if($result->num_rows > 0){

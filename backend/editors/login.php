@@ -3,7 +3,7 @@
 include "../cors.php";
 include "../db.php";
 
-session_start();
+
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -38,7 +38,7 @@ if(isset($pass) && isset($email_post)){
         $storedHashedPassword = $row["password"];
         if((password_verify($pass, $storedHashedPassword)) ){
 
-        // $_SESSION["user_id"] = $row["id"];
+        $_SESSION["user_id"] = $row["id"];
     
 		// $_SESSION["user_name"] = $row["username"];
 

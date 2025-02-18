@@ -8,9 +8,9 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 
 
-$email = $data["encrypted"];
+$email = $_SESSION["user_id"];
 
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ? OR `email` = ? OR md5(`email`) = ?");
+$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `id` = ?");
 if(!$stmt){
     print_r($con->error);
 }else{

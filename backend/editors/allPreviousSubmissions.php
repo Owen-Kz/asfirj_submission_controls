@@ -5,7 +5,7 @@ include "../db.php";
 include "./isAdminAccount.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
-$adminId = $data["admin_id"];
+$adminId = $_SESSION["user_id"];
 $revisionID = $data["item_id"];
 $mainId = $revisionID;
 // if (($pos = strpos($revisionID, '.R')) !== false) {

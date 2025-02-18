@@ -7,7 +7,7 @@ include "./isAdminAccount.php";
 $data = json_decode(file_get_contents("php://input"), true);
 
 $authorEmail = $data["id"];
-$admin = $data["admin"];
+$admin = $_SESSION["user_id"];
 
 if(isAdminAccount($admin) && $authorEmail != ''){
     // Find profile Details 

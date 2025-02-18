@@ -5,7 +5,7 @@ include "../db.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-$useremail = $data["user"];
+$useremail = $_SESSION["user_email"];
 
 if($useremail){
     // Check if the user has any submissions under thier email 

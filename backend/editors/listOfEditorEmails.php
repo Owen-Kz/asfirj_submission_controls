@@ -4,11 +4,11 @@ include "../db.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-$editorId = $data["editorId"];
+$editorId = $_SESSION["user_email"];
 
 if ($editorId) {
     // Find the Authors for the article 
-    $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`id`) = ?");
+    $stmt = $con->prepare("SELECT * FROM `editors` WHERE `email` = ?");
     if (!$stmt) {
         echo $stmt->error;
         exit;
@@ -20,7 +20,7 @@ if ($editorId) {
     if ($result->num_rows > 0) {
         $listOfEmails = array();
    
-        $stmtKl = $con->prepare("SELECT `email` FROM `editors`  WHERE md5(`id`) != ?");
+        $stmtKl = $con->prepare("SELECT `email` FROM `editors`  WHERE `email` != ?");
         if (!$stmtKl) {
             echo $stmtKl->error;
             exit;

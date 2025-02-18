@@ -7,7 +7,7 @@ include "../SaveEmail.php";
 
 
 // $_POST = json_decode(file_get_contents("php://input"), true);
-$editor = $_POST["editor"];
+$editor = $_SESSION["user_email"];
 $article_id = $_POST["articleId"];
 $reviewerEmail = $_POST["reviewerEmail"];
 $subject = $_POST["subject"];

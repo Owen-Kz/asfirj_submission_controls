@@ -3,9 +3,11 @@
 include "../cors.php";
 include "../db.php";
 $data = json_decode(file_get_contents("php://input"), true);
-$accountID = $data["id"];
+$accountID = $_SESSION["user_id"];
+
+
 if($accountID){
-$stmt = $con->prepare("SELECT * FROM `editors` WHERE `email` = ? OR md5(`id`) = ?");
+$stmt = $con->prepare("SELECT * FROM `editors` WHERE `id` = ?");
 if(!$stmt){
     echo json_encode(array("error" => $stmt->error));
     exit;

@@ -50,13 +50,13 @@ if(isset($pass) && isset($email_post)){
         }
         if((password_verify($pass, $storedHashedPassword)) ){
 
-        // $_SESSION["user_id"] = $row["id"];
+        $_SESSION["user_id"] = $row["id"];
     
 		// $_SESSION["user_name"] = $row["username"];
 
         // $_SESSION["account_type"] = $row["acct_type"];
 
-        // $_SESSION["user_email"] = $row["email"];
+        $_SESSION["user_email"] = $row["email"];
 
         $ip_add = getenv("REMOTE_ADDR"); 
 

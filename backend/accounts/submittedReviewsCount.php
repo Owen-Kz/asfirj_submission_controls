@@ -3,7 +3,7 @@
 include "../cors.php";
 include "../db.php";
 
-$userId = $_GET["u_id"];
+$userId = $_SESSION["user_email"];
 
 if(isset($userId)){
     $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submitted_for_review` WHERE `reviewer_email` = ? AND `status` = 'review_submitted'");

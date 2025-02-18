@@ -5,8 +5,8 @@ include "../db.php";
 include "./isAdminAccount.php";
 
 // session_start();
-if(isset($_GET["u_id"])){
-    $isAdmin = isAdminAccount($_GET['u_id']);
+if(isset($_SESSION["user_id"])){
+    $isAdmin = isAdminAccount($_SESSION["user_id"]);
     if($isAdmin){
 
 $email = $_GET["encrypted"];

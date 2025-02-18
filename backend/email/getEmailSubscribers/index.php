@@ -3,7 +3,7 @@ include __DIR__."../../cors.php";
 include __DIR__."../../db.php";
 include __DIR__."../isAdministrator.php";
 
-$adminId = $_GET["a_id"];
+$adminId = $_SESSION["user_id"];
 if(isset($adminId)){
     if(isAdministrator($adminId)){
         $stmt = $con->prepare("SELECT * FROM `news_letter_subscribers` WHERE 1 ORDER BY `id` DESC");

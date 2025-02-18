@@ -3,8 +3,8 @@ include "../cors.php";
 include "../db.php";
 
 
-if(isset($_POST["userId"])){
-$userEmail = $_POST["userId"];
+if(isset($_SESSION["user_id"])){
+$userEmail = $_SESSION["user_id"];
 $prefix = $_POST["prefix"];
 $firstname = $_POST["first_name"];
 $lastname = $_POST["last_name"];
@@ -19,7 +19,7 @@ $asfi_membership_id = $_POST["asfi_membership_id"];
 
 // Find the user 
 
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ? AND `account_status` != 'unverified'");
+$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `id` = ? AND `account_status` != 'unverified'");
 if (!$stmt) {
     $response = array("error" => $con->error, "articles" => []);
     echo json_encode($response);
@@ -30,7 +30,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 if($result->num_rows > 0){
     // Update the Account Details 
-    $stmt= $con->prepare("UPDATE `authors_account` SET `prefix`=?,`firstname`=?,`lastname`=?,`othername`=?,`orcid_id`=?,`discipline`=?,`affiliations`=?,`affiliation_country`=?,`affiliation_city`=?,`is_available_for_review`=?,`asfi_membership_id`=? WHERE md5(`id`) = ?");
+    $stmt= $con->prepare("UPDATE `authors_account` SET `prefix`=?,`firstname`=?,`lastname`=?,`othername`=?,`orcid_id`=?,`discipline`=?,`affiliations`=?,`affiliation_country`=?,`affiliation_city`=?,`is_available_for_review`=?,`asfi_membership_id`=? WHERE `id` = ?");
     if (!$stmt) {
         $response = array("error" => $con->error, "articles" => []);
         echo json_encode($response);

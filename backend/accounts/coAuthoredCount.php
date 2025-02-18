@@ -3,7 +3,7 @@
 include "../cors.php";
 include "../db.php";
 
-$userId = $_GET["u_id"];
+$userId = $_SESSION["user_email"];
 
 if(isset($userId)){
     $stmt = $con->prepare("SELECT * FROM `submission_authors` WHERE `authors_email` = ?");

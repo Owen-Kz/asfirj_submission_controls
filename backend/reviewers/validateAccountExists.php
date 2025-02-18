@@ -9,7 +9,7 @@ session_start();
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-$email = $data["encrypted"];
+$email = $_SESSION["user_email"];
 
 $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
 $stmt->bind_param("s", $email);

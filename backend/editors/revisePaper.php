@@ -6,7 +6,7 @@ include "./uploadAttachments.php";
 include "../SaveEmail.php";
 
 // $_POST = json_decode(file_get_contents("php://input"), true);
-$editor = $_POST["editor"];
+$editor = $_SESSION["user_email"];
 $article_id = $_POST["articleId"];
 $reviewerEmail = $_POST["reviewerEmail"];
 $subject = $_POST["subject"];
@@ -48,7 +48,7 @@ $message = $_POST["message"];
     $bccEmails = isset($_POST['bccEmail']) ? explode(',', $_POST['bccEmail']) : [];
 
 if(isset($editor)){
-    $stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`email`) = ? AND (`editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?)");
+    $stmt = $con->prepare("SELECT * FROM `editors` WHERE `email` = ? AND (`editorial_level` = ? OR `editorial_level` = ? OR `editorial_level` =?)");
 
     $editorialLevelOne = "editor_in_chief";
     $editorialLevelTwo = "associate_editor";

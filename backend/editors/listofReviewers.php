@@ -3,9 +3,9 @@ include "../cors.php";
 include "../db.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
-$editor_id = $data["editor"];
+$editor_id = $_SESSION["user_email"];
 
-$stmt = $con->prepare("SELECT * FROM `editors` WHERE md5(`id`) = ?");
+$stmt = $con->prepare("SELECT * FROM `editors` WHERE `email` = ?");
 $stmt->bind_param("s", $editor_id);
 $stmt->execute();
 $result = $stmt->get_result();

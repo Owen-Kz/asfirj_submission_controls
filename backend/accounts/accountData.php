@@ -3,19 +3,20 @@
 include "../cors.php";
 include "../db.php";
 session_start();
-
+$data = json_decode(file_get_contents("php://input"), true);
+$email = $data["encrypted"];
 // Check if user is logged in
-if (!isset($_SESSION["user_id"])) {
+if (!isset($email)) {
     // header("Location: /login.php"); // Redirect to the login page
     $response = array("status" => "error", "accountData" => "Not Logged In");
     
     exit(); // Stop script execution
 }
 
-$email = $_SESSION["user_id"];
+// $email = $email;
 
 // Prepare SQL query
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `id` = ?");
+$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ?");
 if (!$stmt) {
     $response = array("status" => "error", "message" => "Database error: " . $con->error);
     echo json_encode($response);

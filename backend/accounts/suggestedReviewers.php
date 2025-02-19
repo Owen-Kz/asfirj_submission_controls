@@ -1,6 +1,7 @@
 <?php
 include "../cors.php";
 include "../db.php";
+session_start();
 
 if(isset($_GET["articleID"])){
     $stmt = $con->prepare("SELECT * FROM `suggested_reviewers` WHERE `article_id` = ? ORDER BY `id` ASC");

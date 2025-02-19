@@ -2,7 +2,7 @@
 
 include "../cors.php";
 include "../db.php";
-// session_start();
+session_start();
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -14,7 +14,7 @@ $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `id` = ?");
 if(!$stmt){
     print_r($con->error);
 }else{
-$stmt->bind_param("sss", $email, $email, $email);
+$stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 

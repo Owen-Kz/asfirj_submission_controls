@@ -2,6 +2,7 @@
 
 include "../cors.php";
 include "../db.php";
+session_start();
 
 $userId = $_SESSION["user_email"];
 

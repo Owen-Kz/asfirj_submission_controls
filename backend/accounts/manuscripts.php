@@ -6,7 +6,7 @@ session_start();
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-$useremail = $_GET["u_id"];
+$useremail = $data["user"];
 
 if($useremail){
     // Check if the user has any submissions under thier email 

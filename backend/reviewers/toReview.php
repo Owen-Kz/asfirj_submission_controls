@@ -7,7 +7,7 @@ include "../db.php";
 
 // $email = $data["encrypted"];
 $email = $_GET["user"];
-$userEMail = "";
+echo "$email";
 $stmt = $con->prepare("SELECT * FROM authors_account WHERE md5(id) = ? OR md5(email) = ? OR email = ?", );
 $stmt->bind_param("sss", $email, $email, $email);
 $stmt->execute();

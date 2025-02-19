@@ -23,7 +23,7 @@ $stmt->bind_param("s", $userEMail);
 $stmt->execute();
 $result = $stmt->get_result();
 if(mysqli_num_rows($result) > 0){
-    echo $result;
+
     $toReviewList = array(); // Initialize an array to store all toReview
     // $ReviewArticleContent = array();
 

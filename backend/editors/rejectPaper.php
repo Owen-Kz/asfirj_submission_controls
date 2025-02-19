@@ -80,7 +80,7 @@ if(isset($editor)){
         // $stmt->execute();
         $invitedFor ="";
         saveEmailDetails($con, $reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails, $attachments, $invitedFor);
-
+ 
         // Send the email notification to reviewer
        if(ReviewerAccountEmail($reviewerEmail, $subject, $message, $editor_email, $article_id, $ccEmails, $bccEmails, $attachments)){
 

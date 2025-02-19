@@ -24,7 +24,7 @@ function getEmailBCC($emailId, $con)
 
             // Close the statement
             $stmt->close();
-
+ 
             // Return the BCC emails as a JSON response
             header('Content-Type: application/json');
             echo json_encode(["status" => "success", "bcc" => $bccEmails]);

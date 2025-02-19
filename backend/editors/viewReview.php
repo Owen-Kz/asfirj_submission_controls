@@ -25,4 +25,4 @@ if(isset($articleId)){
 }else{
     $response = array("status" => "error", "reviewContent" => "Parameters are not set");
     echo json_encode($response);
-}
+} 

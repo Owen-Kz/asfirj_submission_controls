@@ -9,7 +9,7 @@ if(isset($_GET["encrypted"])){
     // $isAdmin = isAdminAccount($_GET['u_id']);
     // if($isAdmin){
 
-$email = $_GET["encrypted"];
+$email = $_GET["encrypted"]; 
 
 $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email`= ?");
 $stmt->bind_param("s", $email);

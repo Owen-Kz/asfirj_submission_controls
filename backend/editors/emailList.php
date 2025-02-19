@@ -5,7 +5,7 @@ include "../db.php";
 include "./isAdminAccount.php";
 
 // session_start();
-if(isset($_SESSION["user_email"])){
+if(isset($_SESSION["user_email"])){ 
     $isAdmin = isAdminAccount($_SESSION["user_email"]);
     if($isAdmin){
         $stmt = $con->prepare('SELECT * FROM `sent_emails` WHERE `sender` = ? ORDER BY `id` DESC');

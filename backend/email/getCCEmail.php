@@ -21,7 +21,7 @@ function getEmailCC($emailId, $con)
             while ($row = $result->fetch_assoc()) {
                 $ccEmails[] = $row['cc_email'];
             }
-
+ 
             // Close the statement
             $stmt->close();
 

@@ -32,7 +32,7 @@ if ($editorId) {
         while ($rowKl = $resutlKl->fetch_assoc()) {
         $listOfEmails[] = $rowKl["email"];
         }
-
+ 
  
 
         $response = array("success" => "List of Emails", "emails" => $listOfEmails);

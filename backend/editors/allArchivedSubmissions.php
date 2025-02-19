@@ -20,7 +20,7 @@ if (isset($adminId)) {
                     WHERE s.title != ''
                 )
                 SELECT *
-                FROM RankedSubmissions
+                FROM RankedSubmissions 
                 WHERE row_num = 1
                 ORDER BY process_start_date DESC;
 

@@ -20,4 +20,4 @@ function uploadToCloudinary($fileTmpPath, $fileName) {
     ]);
 
     return $result['secure_url']; // Return the URL of the uploaded file
-}
+} 

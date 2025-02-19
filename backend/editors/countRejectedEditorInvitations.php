@@ -13,7 +13,7 @@ if(isset($_GET["a_id"])){
 
     $count = $row["countInvitations"];
     echo json_encode(array("success"=>"counted", "count"=>$count));
-}else{
+}else{ 
     echo json_encode(array("error"=>"couldNotCount", "count"=>0));
 
 }

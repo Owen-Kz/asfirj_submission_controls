@@ -8,7 +8,7 @@ $userId = $_GET["u_id"];
 if(isset($userId)){
     // if(isAdminAccount($userId)){
         $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `sent_emails` WHERE `email_for` = 'To Edit' ");
-        // $stmt->bind_param("s", $userId);
+        // $stmt->bind_param("s", $userId); 
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();

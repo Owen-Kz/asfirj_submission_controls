@@ -44,5 +44,5 @@ if(isAdminAccount($admin) && $authorEmail != ''){
 }else{
     $response = array("error"=>"Could Not Verify Account, You are not an Admin $data");
 }
-
+ 
 echo json_encode($response);

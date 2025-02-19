@@ -26,4 +26,4 @@ if(isset($adminId)){
 }else{
     echo json_encode(array("error"=>"invalidParameters", "emailList" => []));
     
-}
+} 

@@ -10,7 +10,7 @@ if(isset($_SESSION["user_id"])){
     $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE 1 ORDER BY `id` DESC");
     if(!$stmt){
         echo $stmt->error;
-    }
+    } 
     // $stmt->bind_param("s", $_GET["articleID"]);
     $stmt->execute();
     $result = $stmt->get_result();

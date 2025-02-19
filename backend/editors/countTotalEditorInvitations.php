@@ -12,7 +12,7 @@ if(isset($_GET["a_id"])){
     $row = $restult->fetch_assoc();
 
     $count = $row["countInvitations"];
-    echo json_encode(array("success"=>"counted", "count"=>$count));
+    echo json_encode(array("success"=>"counted", "count"=>$count)); 
 }else{
     echo json_encode(array("error"=>"couldNotCount", "count"=>0));
 

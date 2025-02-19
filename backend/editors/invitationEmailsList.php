@@ -11,7 +11,7 @@ if(isset($_SESSION["user_email"])){
         $stmt = $con->prepare("SELECT * FROM `sent_emails` WHERE `sender` = ? AND `email_for` = 'To Edit' ORDER BY `id` DESC");
         $stmt->bind_param("s", $_SESSION["user_email"]);
         $stmt->execute();
-        $result = $stmt->get_result();
+        $result = $stmt->get_result(); 
         if($result->num_rows > 0){
             $emails = array();
             while($row = $result->fetch_assoc()){

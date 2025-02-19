@@ -10,7 +10,7 @@ if(isset($_GET["a_id"])){
     $stmt->execute();
     $restult = $stmt->get_result();
     $row = $restult->fetch_assoc();
-
+ 
     $count = $row["countInvitations"];
     echo json_encode(array("success"=>"counted", "count"=>$count));
 }else{

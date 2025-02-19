@@ -18,7 +18,7 @@ if(!$stmt){
 }else{
     $stmt->execute();
     $result = $stmt->get_result();
-
+ 
     if(mysqli_num_rows($result) > 0){
         $row = $result->fetch_assoc();
         $currentEmail = $row["email"];

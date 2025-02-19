@@ -60,7 +60,7 @@ if(isset($editor)){
         $response = array("status"=>"error", "message" => "$stmt->error");
         echo json_encode($response);
     }
-    $stmt->execute();
+    $stmt->execute(); 
     $result = $stmt->get_result();
     
     if(mysqli_num_rows($result) > 0){

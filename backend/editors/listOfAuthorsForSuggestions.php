@@ -20,4 +20,4 @@ if(isset($_GET["articleID"])){
 }else{
     $response = array("InvalidParameters");
     echo json_encode($response);
-}
+} 

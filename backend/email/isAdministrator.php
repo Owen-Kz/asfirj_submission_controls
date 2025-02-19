@@ -18,4 +18,4 @@ function isAdministrator($accountID){
     }else{
         return false;
     }
-}
+} 

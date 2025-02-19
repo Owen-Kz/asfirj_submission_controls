@@ -67,7 +67,7 @@ if(isset($editor)){
         $editor_email = $row["email"];
 
         $stmt = $con->prepare("UPDATE `submissions` SET `status` = 'returned_for_revision' WHERE `revision_id` = ?");        
-        $stmt->bind_param("s", $article_id);
+        $stmt->bind_param("s", $article_id); 
         if($stmt->execute()){
         $response = array("status" => "success", "message"=>"Review Process Initiated");
         // print_r($response);

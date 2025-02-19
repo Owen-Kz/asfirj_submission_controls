@@ -20,7 +20,7 @@ if(isset($_GET["u_id"])){
             // }
             $response = array("emails"=> $row);
             echo json_encode($response);
-        }else{
+        }else{ 
             $response = array("noEmail"=> []);
             echo json_encode($response);
         }

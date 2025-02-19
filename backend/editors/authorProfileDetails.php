@@ -10,7 +10,7 @@ if(isset($_SESSION["user_id"])){
     if($isAdmin){
 
 $email = $_GET["encrypted"];
-
+ 
 $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email`= ?");
 $stmt->bind_param("s", $email);
 if(!$stmt){

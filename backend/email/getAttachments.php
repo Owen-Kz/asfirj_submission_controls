@@ -24,7 +24,7 @@ function getEmailAttachments($emailId, $con)
 
             // Close the statement
             $stmt->close();
-
+ 
             // Return the Attachments emails as a JSON response
             header('Content-Type: application/json');
             echo json_encode(["status" => "success", "attachments" => $attachmentsEmails]);

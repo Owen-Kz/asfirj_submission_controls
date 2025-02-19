@@ -12,7 +12,7 @@ if(!$stmt){
     echo json_encode(array("error" => $stmt->error));
     exit;
 }
-$stmt->bind_param("ss", $accountID, $accountID);
+$stmt->bind_param("s", $accountID);
 $stmt->execute();
 $result = $stmt->get_result();
 if($result->num_rows > 0){

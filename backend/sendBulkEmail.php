@@ -60,7 +60,7 @@ function convertToHTML($contentArray) {
 
     return $html;
 }
-
+ 
 function SendBulkEmail($RecipientEmail, $subject, $message, $editor_email, $article_id, $attachments) {
     require_once __DIR__ . '/../vendor/autoload.php';
     require __DIR__ . "/../backend/exportENV.php";

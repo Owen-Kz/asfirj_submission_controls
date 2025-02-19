@@ -19,7 +19,7 @@ if ($editorId) {
 
     if ($result->num_rows > 0) {
         $listOfEmails = array();
-   
+    
         $stmtKl = $con->prepare("SELECT `email` FROM `editors`  WHERE `email` != ?");
         if (!$stmtKl) {
             echo $stmtKl->error;

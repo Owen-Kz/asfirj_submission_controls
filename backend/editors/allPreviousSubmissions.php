@@ -14,7 +14,7 @@ $mainId = $revisionID;
 // }else{
 //     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ?  AND title != ''");
 // }
-if (isset($adminId)) {
+if (isset($adminId)) { 
     $isAdminAccount = isAdminAccount($adminId);
     if ($isAdminAccount) {
         $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND title != '' ORDER BY `id` DESC");

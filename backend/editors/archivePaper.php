@@ -7,7 +7,7 @@ include "./isAdminAccount.php";
 $data = json_decode(file_get_contents("php://input"), true);
 $submissinoId = $data["submissionId"];
 
-if(isset($submissinoId)){
+if(isset($submissinoId)){ 
     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `revision_id` = ?");
     $stmt->bind_param("s", $submissinoId);
     $stmt->execute();

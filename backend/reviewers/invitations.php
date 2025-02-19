@@ -63,7 +63,7 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
                 $response = array("status" => "error", "message" => "This Invite has already been accepted");
                 echo json_encode($response);
                 exit;
-            } else {
+            } else { 
 
  
                 if (isset($action) && $action === "accept") {

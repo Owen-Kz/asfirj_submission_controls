@@ -71,3 +71,4 @@ if(isAdminAccount($admin) && $authorEmail != ''){
 }
 
 echo json_encode($response);
+ 

@@ -35,7 +35,7 @@ if(isset($email) && isset($password)){
         $response = array("status"=>"error", "message"=>$stmt->error);
                 echo json_encode($response);
     }else{
-        $stmt->execute();
+        $stmt->execute(); 
         $result = $stmt->get_result();
 
         $count = mysqli_num_rows($result);

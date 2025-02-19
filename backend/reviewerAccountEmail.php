@@ -19,7 +19,7 @@ function ReviewerAccountEmail($RecipientEmail, $subject, $message, $editor_email
             $config
         );
 
-        function convertToHTML($contentArray)
+         function convertToHTML($contentArray)
         {
             $html = '';
             $listOpen = false;

@@ -10,7 +10,7 @@ if($ArticleId){
     $stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` = ? ORDER BY `id` DESC");
     $stmt->bind_param("s", $ArticleId);
     $stmt->execute();
-    $result  = $stmt->get_result();
+    $result  = $stmt->get_result(); 
     if($result->num_rows > 0){
         $ReviewsList = array();
 

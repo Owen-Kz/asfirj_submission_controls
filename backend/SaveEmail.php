@@ -17,7 +17,7 @@ function saveEmailDetails($con, $RecipientEmail, $subject, $message, $senderEmai
         }
         $stmt->close();
     }
-
+ 
     // Save BCC emails
     if (!empty($bccEmails)) {
         $stmt = $con->prepare("INSERT INTO email_bcc (email_id, bcc_email) VALUES (?, ?)");

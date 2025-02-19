@@ -16,4 +16,4 @@ if(isset($_GET["a_id"])){
 }else{
     echo json_encode(array("error"=>"couldNotCount", "count"=>0));
 
-}
+} 

@@ -87,7 +87,7 @@ if (isset($_GET["a_id"]) && isset($_GET["u_id"])) {
                     if ($stmt->execute()) {
                         $response = array("status" => "success", "message" => "You have rejected this Invitation and will be redirected to the home page");
 
-
+ 
                         // Update the edit process 
                         $stmt = $con->prepare("UPDATE `submitted_for_edit` SET `status` = 'invitation_rejected' WHERE `article_id`=? AND `editor_email` =?");
                         $stmt->bind_param("ss",$invitationId, $invitedUserEmail );

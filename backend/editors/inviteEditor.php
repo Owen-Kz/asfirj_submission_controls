@@ -148,4 +148,4 @@ if(isset($editor)){
         $response = array("status"=>"error", "message" => "Unauthorized account");
         echo json_encode($response);
     }
-}
+} 

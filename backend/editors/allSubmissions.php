@@ -1,7 +1,7 @@
 <?php
 
 include "../cors.php";
-include "../db.php";
+// include "../db.php";
 include "./isAdminAccount.php";
 
 $data = json_decode(file_get_contents("php://input"), true);

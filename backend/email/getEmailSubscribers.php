@@ -22,7 +22,7 @@ if(isset($adminId)){
     }else{
         echo json_encode(array("error"=>"unAuthorizedAccess", "emailList" => []));
         
-    }
+    } 
 }else{
     echo json_encode(array("error"=>"invalidParameters", "emailList" => []));
     

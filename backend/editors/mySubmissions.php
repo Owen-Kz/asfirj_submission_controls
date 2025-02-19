@@ -22,7 +22,7 @@ if(isset($adminId)){
         }
     echo json_encode(array("success" => "Admin Account", "submissions" => $submissions));
 
-    }else{
+    }else{ 
         // Check if user has been invited for any submission 
         $stmt = $con->prepare("SELECT * FROM `submitted_for_edit` WHERE `editor_email` = ? ORDER BY `id` DESC");
         if(!$stmt){

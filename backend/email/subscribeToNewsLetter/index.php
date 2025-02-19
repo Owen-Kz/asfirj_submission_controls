@@ -32,7 +32,7 @@ if ($data) {
             }
         }
 
-    
+     
 
     } else {
         echo json_encode(array("status"=>"error", "message" => "Invalid Email address"));

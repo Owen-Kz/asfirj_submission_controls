@@ -56,7 +56,7 @@ if(isset($adminId)){
      
             $submissions[] = $rowMain;
         
-    }
+    } 
     echo json_encode(array("success" => "Admin Account", "submissions" => $submissions));
 }else{
     echo json_encode(array("error" => "No Invites Available"));

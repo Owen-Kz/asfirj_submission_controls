@@ -9,7 +9,7 @@ if(isset($userId)){
     // if(isAdminAccount($userId)){
         $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submissions` WHERE `status` = 'review_submitted' ");
         // $stmt->bind_param("s", $userId);
-        $stmt->execute();
+        $stmt->execute(); 
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
         $count = $row["count"];

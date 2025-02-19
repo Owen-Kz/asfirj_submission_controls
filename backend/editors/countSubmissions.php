@@ -5,7 +5,7 @@ include "../db.php";
 include "./isAdminAccount.php";
 $userId = $_GET["u_id"];
 
-if(isset($userId)){
+if(isset($userId)){ 
     if(isAdminAccount($userId)){
         $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submissions` WHERE `status` = 'submitted' OR `status` = 'correction_submitted'");
         // $stmt->bind_param("s", $userId);

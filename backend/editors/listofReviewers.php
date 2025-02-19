@@ -19,7 +19,7 @@ $count = mysqli_num_rows($result);
 
 if($count > 0){
     $authorsList = array(); // Initialize an array to store all authors
-
+ 
     while ($row = $result->fetch_assoc()) {
         // Loop through each row in the result set and append it to the authorsList array
         $authorsList[] = $row;

@@ -28,4 +28,4 @@ if(isset($emailID)){
     
 }else{
     echo json_encode(array("error"=>"Invalid Parameters"));
-}
+} 

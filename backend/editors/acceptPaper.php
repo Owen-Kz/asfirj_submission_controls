@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-
+ 
 // Collect file attachments
 $attachments = [];
 if (!empty($_FILES['attachments']['name'][0])) {

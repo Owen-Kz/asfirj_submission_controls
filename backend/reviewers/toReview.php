@@ -15,6 +15,7 @@ $results = $stmt->get_result();
 if(mysqli_num_rows($results) > 0){
     $row = $results->fetch_assoc();
     $userEMail = $row["email"];
+    echo $userEMail;
 
 
 $stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `reviewer_email` = ? AND `status` = 'review_invitation_accepted' ORDER BY `id` DESC");

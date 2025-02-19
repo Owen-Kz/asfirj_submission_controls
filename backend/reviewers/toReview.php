@@ -80,11 +80,11 @@ if(mysqli_num_rows($result) > 0){
     // $response = array("status" => "success", "submissionsToReview" => $toReviewList);
     // echo json_encode($response);
 }else{
-    echo "<tr><td>You have no new review requests";
+    echo "<tr><td>You have no new review requests</td></tr>";
     // $response = array("status" => "success", "submissionsToReview" => []);
     // echo json_encode($response);
 }
 }else{
-    echo "<tr><td>Internal Server Error";
+    echo "<tr><td>Internal Server Error</td></tr>";
 
 }

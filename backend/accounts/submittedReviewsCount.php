@@ -4,7 +4,7 @@ include "../cors.php";
 include "../db.php";
 session_start();
 
-$userId = $_SESSION["user_email"];
+$userId = $_GET["u_id"];
 
 if(isset($userId)){
     $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submitted_for_review` WHERE `reviewer_email` = ? AND `status` = 'review_submitted'");

@@ -59,8 +59,8 @@ function SendWelcomeEmail($RecipientEmail) {
             $subject = "ASFI Research Journal Account Created";
             $htmlContent = "<h2> Hi, $prefix $RecipientName</h2>
                 <p>Welcome to ASFI Research Journal</p>
-                <p><a href='https://process.asfirj.org/verify?a=$encryptedButton'>click here</a> to verify your account.</p>
-                <p>Or paste this <a href='https://process.asfirj.org/verify?a=$encryptedButton'>https://process.asfirj.org/verify?a=$encryptedButton</a> link in your browser</p>
+                <p><a href='https://process.asfirj.org/verify?e=$encryptedButton'>click here</a> to verify your account.</p>
+                <p>Or paste this <a href='https://process.asfirj.org/verify?e=$encryptedButton'>https://process.asfirj.org/verify?e=$encryptedButton</a> link in your browser</p>
                 <p><center><h6>African Science Research Journal</h6></center></p>";
 
             $message = <<<EOT

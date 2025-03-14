@@ -9,10 +9,11 @@ $email = $data["email"];
 $resetToken = $data["resetToken"];
 $newPassword = $data["password"];
 
+
 if($data){
     $encryptedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) =? AND md5(`resetToken`) =?");
-    $stmt->bind_param("ss", $email, $resetToken);
+    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE ( md5(`id`) = ? OR md5(email) =? OR email = ?) AND (md5(`resetToken`) =? OR resetToken = ?)");
+    $stmt->bind_param("sssss", $email,$email,$email, $resetToken, $resetToken);
     $stmt->execute();
     $result = $stmt->get_result();
     if($result->num_rows > 0){

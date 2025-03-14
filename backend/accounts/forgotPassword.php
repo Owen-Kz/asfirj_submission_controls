@@ -16,6 +16,8 @@ if($email){
     $stmt->execute();
     $result = $stmt->get_result();
     if($result->num_rows > 0){
+        $row = $result->fetch_assoc();
+        $id = $row["id"];
    
         $resetToken = generateRandom6DigitNumber();
         // Update the REset Token for Author Account
@@ -23,7 +25,7 @@ if($email){
         $stmt->bind_param("s", $resetToken);
         if($stmt->execute()){
             SendPasswordResetEmail($email, $resetToken);
-            echo json_encode(array("success" => "passwordResetEmailSent", "userEmail" => md5($email)));
+            echo json_encode(array("success" => "passwordResetEmailSent", "userEmail" => md5($id)));
         }
 
     }else{

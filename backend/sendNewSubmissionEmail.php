@@ -2,109 +2,149 @@
 
 function SendNewSubmissionEmail($RecipientEmail, $manuscriptTitle, $manuscriptId) {
     require_once __DIR__ . '/../vendor/autoload.php';
-
-    // Import Environment Variables
     include __DIR__ . '/exportENV.php';
     include __DIR__ . '/db.php';
 
     $apiKey = $_ENV['BREVO_API_KEY'];
     $senderEmail = $_ENV["BREVO_EMAIL"];
+    $currentYear = date("Y");
 
-    if ($RecipientEmail) {
+    if (!filter_var($RecipientEmail, FILTER_VALIDATE_EMAIL)) {
+        return ['status' => 'error', 'message' => 'Invalid email format'];
+    }
+
+    try {
         $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
+        if (!$stmt) {
+            throw new Exception("Database preparation failed: " . $stmt->error);
+        }
+        
         $stmt->bind_param("s", $RecipientEmail);
         $stmt->execute();
         $result = $stmt->get_result();
-        $count = mysqli_num_rows($result);
-
-        if ($count > 0) {
-            $row = mysqli_fetch_array($result);
-            $prefix = $row["prefix"];
-            $RecipientName = $row["firstname"];
-
-            $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
-            $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
-                new \GuzzleHttp\Client(), 
-                $config
-            );
-
-            $email = new \Brevo\Client\Model\SendSmtpEmail();
-            
-            // Set sender
-            $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
-            $sender->setEmail($senderEmail);
-            $sender->setName('ASFI Research Journal');
-            $email->setSender($sender);
-            
-            // Set recipient
-            $email->setTo([['email' => $RecipientEmail, 'name' => $RecipientName]]);
-            $email->setSubject(" $manuscriptTitle ($manuscriptId)");
-            $date = date('D-M-Y');
-            $htmlContent = <<<EOT
-                      <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>submission Confirmation - $manuscriptTitle</title>
-                        </head>
-                        <body>
-                            <p>$date</p>
-
-                                        <p>Dear $prefix $RecipientName,</p>
-
-                                        <p>Your manuscript referenced above has been successfully submitted online and is presently being given full consideration for publication in ASFI Research Journal (ASFIRJ).</p>
-
-                                        <p>Your paper will now be checked by the Editorial Office to ensure it is ready to go to an Editor. If there are any corrections required, your manuscript will be returned to you and you will receive instructions on what changes to make.</p>
-
-                <p>If there are no changes required, your manuscript will be assigned to an Editor for initial assessment. If your submission passes these stages, it will be sent for external peer review.</p>
-
-                <p>Your manuscript ID is <strong>[$manuscriptId]</strong>.</p>
-
-                <p>Please mention the above manuscript ID in all future correspondence with the journal. You can view the status of your manuscript at any time by logging into the submission site at <a href="https://asfirj.org/portal/login/">https://asfirj.org/portal/login/</a>.</p>
-
-                <p>It is the policy of the journal to correspond exclusively with one designated corresponding author. It is the responsibility of the corresponding author to communicate all correspondences from the journal with the co-authors.</p>
-
-                <p><strong>Co-authors</strong> should contact the Editorial Office as soon as possible if they disagree with being listed as co-authors in submitted manuscript. Otherwise, no further action is required on their part.</p>
-
-                <p><em>ASFIRJ</em> is the official journal of the African Science Frontiers Initiatives (ASFI). It is a peer-reviewed international, open access, multidisciplinary journal, publishing original papers, expert reviews, systematic reviews and meta-analyses, position papers, guidelines, protocols, data, editorials, news and commentaries, research letters from any research field.</p>
-
-                <p>Thank you for submitting your manuscript to ASFIRJ.</p>
-
-                <p>Sincerely,</p>
-
-                <p>ASFIRJ Editorial Office<br>
-                <a href="mailto:submissions@asfirj.org">submissions@asfirj.org</a></p>
-
-                <p>ASFI Research Journal<br>
-                Excellence. Quality. Impact<br>
-                "Raising the bar of scientific publishing in Africa"<br>
-                <a href="https://asfirj.org/">https://asfirj.org/</a><br>
-                <a href="mailto:asfirj@asfirj.org">asfirj@asfirj.org</a><br>
-                LinkedIn: <a href="https://www.linkedin.com/in/asfi-research-journal-1b9929309">www.linkedin.com/in/asfi-research-journal-1b9929309</a><br>
-                X (formerly Twitter): <a href="https://twitter.com/asfirj1">https://twitter.com/asfirj1</a><br>
-                Instagram: <a href="https://www.instagram.com/asfirj1/">https://www.instagram.com/asfirj1/</a><br>
-                WhatsApp: <a href="https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3">https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3</a></p>
-            </body>
-            </html>
-
-            
-            EOT;
-
-            $email->setHtmlContent($htmlContent);
-
-            try {
-                $response = $apiInstance->sendTransacEmail($email);
-                $response = array('status' => 'success', 'message' => 'Email sent');
-            } catch (\Brevo\Client\ApiException $e) {
-                $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage());
-            }
-        } else {
-            $response = array('status' => 'error', 'message' => 'User does not exist on Our servers');
+        
+        if ($result->num_rows === 0) {
+            return ['status' => 'error', 'message' => 'Author not found in our records'];
         }
-    } else {
-        $response = array('status' => 'error', 'message' => 'Invalid Request');
-    }
 
-    // print_r($response);
+        $row = $result->fetch_assoc();
+        $prefix = htmlspecialchars($row["prefix"]);
+        $RecipientName = htmlspecialchars($row["firstname"]);
+        $cleanTitle = htmlspecialchars($manuscriptTitle);
+        $date = date('F j, Y');
+
+        $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
+        $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
+            new \GuzzleHttp\Client(),
+            $config
+        );
+
+        $email = new \Brevo\Client\Model\SendSmtpEmail();
+        
+        // Set sender
+        $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
+        $sender->setEmail($senderEmail);
+        $sender->setName('ASFI Research Journal');
+        $email->setSender($sender);
+
+        // Set recipient
+        $email->setTo([['email' => $RecipientEmail, 'name' => "$prefix $RecipientName"]]);
+        
+        // Set unsubscribe headers
+        $headers = new \stdClass();
+        $headers->{'List-Unsubscribe'} = '<https://asfirj.org/unsubscribe?email='.urlencode($RecipientEmail).'>';
+        $headers->{'List-Unsubscribe-Post'} = 'List-Unsubscribe=One-Click';
+        $email->setHeaders($headers);
+
+        // Set subject
+        $email->setSubject("Submission Confirmed: $cleanTitle (ID: $manuscriptId)");
+
+        // HTML content with proper styling
+        $htmlContent = <<<EOT
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Confirmation - $cleanTitle</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .highlight { background-color: #f8f9fa; padding: 10px; border-left: 4px solid #3498db; margin: 15px 0; }
+        .button { background-color: #3498db; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; display: inline-block; }
+        .footer { font-size: 0.8em; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 15px; margin-top: 30px; }
+        .manuscript-id { font-size: 1.2em; font-weight: bold; color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Submission Confirmation</h2>
+        <p>$date</p>
+    </div>
+    
+    <p>Dear $prefix $RecipientName,</p>
+    
+    <p>Your manuscript <strong>"$cleanTitle"</strong> has been successfully submitted to ASFI Research Journal (ASFIRJ) and is now under consideration for publication.</p>
+    
+    <div class="highlight">
+        <p>Manuscript ID: <span class="manuscript-id">$manuscriptId</span></p>
+        <p>Please reference this ID in all future correspondence.</p>
+    </div>
+    
+    <h3>Next Steps:</h3>
+    <ol>
+        <li>Editorial Office review for completeness</li>
+        <li>Assignment to an Editor for initial assessment</li>
+        <li>If suitable, external peer review</li>
+    </ol>
+    
+    <p>You can track your submission status at any time:</p>
+    <p style="margin: 20px 0;">
+        <a href="https://asfirj.org/portal/login/" class="button">View Submission Status</a>
+    </p>
+    
+    <h3>Important Notes:</h3>
+    <ul>
+        <li>All correspondence will be with the designated corresponding author</li>
+        <li>Co-authors should contact us immediately if they dispute authorship</li>
+    </ul>
+    
+    <p><em>ASFIRJ</em> is the official journal of the African Science Frontiers Initiatives (ASFI), publishing peer-reviewed, open access research across all disciplines.</p>
+    
+    <div class="footer">
+        <p><strong>ASFIRJ Editorial Office</strong><br>
+        <a href="mailto:submissions@asfirj.org">submissions@asfirj.org</a></p>
+        
+        <p>ASFI Research Journal<br>
+        Excellence. Quality. Impact<br>
+        "Raising the bar of scientific publishing in Africa"</p>
+        
+        <p style="margin-top: 20px;">
+            <a href="https://asfirj.org/">Website</a> | 
+            <a href="https://asfirj.org/unsubscribe?email=$RecipientEmail">Unsubscribe</a> | 
+            <a href="https://asfirj.org/contact">Contact Us</a>
+        </p>
+        
+        <div style="font-size: 0.7em; margin-top: 15px;">
+            <p>Connect with us:</p>
+            <a href="https://www.linkedin.com/in/asfi-research-journal-1b9929309">LinkedIn</a> | 
+            <a href="https://twitter.com/asfirj1">Twitter</a> | 
+            <a href="https://www.instagram.com/asfirj1/">Instagram</a> | 
+            <a href="https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3">WhatsApp</a>
+        </div>
+    </div>
+</body>
+</html>
+EOT;
+
+        $email->setHtmlContent($htmlContent);
+
+        $response = $apiInstance->sendTransacEmail($email);
+        return ['status' => 'success', 'message' => 'Submission confirmation email sent successfully'];
+
+    } catch (\Brevo\Client\ApiException $e) {
+        return ['status' => 'error', 'message' => 'Email sending failed: ' . $e->getMessage()];
+    } catch (Exception $e) {
+        return ['status' => 'error', 'message' => $e->getMessage()];
+    }
 }

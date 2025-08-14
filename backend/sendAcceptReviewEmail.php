@@ -1,121 +1,170 @@
 <?php
 
 function SendAcceptReviewEmail($RecipientEmail, $manuscriptId, $ccEmails, $bccEmails) {
-
-    require_once __DIR__ . '/../vendor/autoload.php'; // If you're using Composer (recommended)
-    // Import Environment Variables
+    require_once __DIR__ . '/../vendor/autoload.php';
     include __DIR__ . '/exportENV.php';
     include __DIR__ . '/db.php';
 
     $apiKey = $_ENV['BREVO_API_KEY'];
     $senderEmail = $_ENV['BREVO_EMAIL'];
+    $currentYear = date("Y");
 
-    if ($RecipientEmail) {
+    if (!filter_var($RecipientEmail, FILTER_VALIDATE_EMAIL)) {
+        return ['status' => 'error', 'message' => 'Invalid recipient email format'];
+    }
 
+    try {
         $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ?");
+        if (!$stmt) {
+            throw new Exception("Database preparation failed: " . $stmt->error);
+        }
+        
         $stmt->bind_param("s", $RecipientEmail);
         $stmt->execute();
         $result = $stmt->get_result();
-        $count = mysqli_num_rows($result);
-
-        // if user record is available in database then $count will be equal to 1
-        if ($count > 0) {
-            $row = mysqli_fetch_array($result);
-            $email = $row["email"];
-            $prefix = $row["prefix"];
-            $RecipientName = $row["firstname"];
-
-            $encryptedButton = md5($RecipientEmail);
-
-            $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
-            $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
-                new GuzzleHttp\Client(), $config
-            );
-
-            try {
-                $currentYear = date("Y");
-                $subject = "Invitation to review manuscript for ASFI Research Journal ($manuscriptId)";
-                $htmlContent = <<<EOT
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Email Content</title>
-                </head>
-                <body>
-                    <p>[Manuscript title] “ASFI Research Journal of the African Science Frontiers Initiatives (Manuscript ID)”</p>
-                    <p>[Date of sending invite]</p>
-                    <p>[Name of Invited Reviewer],</p>
-                    <p>Thank you for accepting to review this paper. The manuscript files are now available for you on your ASFIRJ Reviewer Dashboard, which you can access using the link: <a href="[Link to Reviewers Dashboard]">Reviewers Dashboard</a>.</p>
-                    <p>On the Reviewer Scoring Sheet, you will provide your reviewer report, evaluation, scoring, and rating of the different aspects of the manuscript. For detailed instructions to reviewers reviewing manuscripts for ASFIRJ, please visit this link: <a href="https://asfirj.org/reviewers.html">https://asfirj.org/reviewers.html</a>.</p>
-                    <p>We will appreciate it if you can return your reviewer report and scoring sheet on or before [Date of Return the Review Report, which should be 14 days from the day of acceptance of review invite].</p>
-                    <br/>
-                    <p>Sincerely,</p>
-                    <p>[Title and Name of Editor]<br>Editor</p>
-                    <p><a href="mailto:submissions@asfirj.org">submissions@asfirj.org</a><br>ASFI Research Journal<br>Excellence. Quality. Impact<br>"Raising the bar of scientific publishing in Africa"</p>
-                    <p><a href="https://asfirj.org/">https://asfirj.org/</a><br><a href="mailto:asfirj@asfirj.org">asfirj@asfirj.org</a></p>
-                    <p>LinkedIn: <a href="https://www.linkedin.com/in/asfi-research-journal-1b9929309">www.linkedin.com/in/asfi-research-journal-1b9929309</a><br>
-                    X (formerly Twitter): <a href="https://twitter.com/asfirj1">https://twitter.com/asfirj1</a><br>
-                    Instagram: <a href="https://www.instagram.com/asfirj1/">https://www.instagram.com/asfirj1/</a><br>
-                    WhatsApp: <a href="https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3">https://chat.whatsapp.com/L8o0N0pUieOGIUHJ1hjSG3</a></p>
-                </body>
-                </html>
-                EOT;
-
-      $email = new \Brevo\Client\Model\SendSmtpEmail();
-            $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
-            $sender->setEmail($senderEmail);
-            $sender->setName("ASFIRJ");
-
-            $recipient = new \Brevo\Client\Model\SendSmtpEmailTo();
-            $recipient->setEmail($RecipientEmail);
-            $recipient->setName($RecipientName);
-
-            $email->setSender($sender);
-            $email->setTo([$recipient]);
-            $email->setSubject($subject);
-            $email->setHtmlContent($emailContent);
-              // Set CC recipients if provided
-  if (!empty($ccEmails)) {
-    $ccRecipients = [];
-    foreach ($ccEmails as $ccEmail) {
-        $ccRecipient = new \Brevo\Client\Model\SendSmtpEmailCc();
-        $ccRecipient->setEmail($ccEmail);
-        $ccRecipients[] = $ccRecipient;
-    }
-    $email->setCc($ccRecipients);
-}
-
-// Set BCC recipients if provided
-if (!empty($bccEmails)) {
-    $bccRecipients = [];
-    foreach ($bccEmails as $bccEmail) {
-        $bccRecipient = new \Brevo\Client\Model\SendSmtpEmailBcc();
-        $bccRecipient->setEmail($bccEmail);
-        $bccRecipients[] = $bccRecipient;
-    }
-    $email->setBcc($bccRecipients);
-}
-            
-                $result = $apiInstance->sendTransacEmail($email);
-
-                // Update database status
-                $stmt = $con->prepare("UPDATE `sent_emails` SET `status` = 'Delivered' WHERE `article_id` = ? AND `sender` = ? AND `subject` = ?");
-                $stmt->bind_param("sss", $manuscriptId, $email['sender']['email'], $subject);
-                $stmt->execute();
-
-                return true;
-            } catch (\Brevo\Client\ApiException $e) {
-                $response = array('status' => 'Internal Error', 'message' => 'Caught exception: ' . $e->getMessage() . "\n");
-                return false;
-            }
-        } else {
-            $response = array('status' => 'error', 'message' => 'User does not exist on Our servers');
-            return false;
+        
+        if ($result->num_rows === 0) {
+            return ['status' => 'error', 'message' => 'Reviewer not found in our records'];
         }
-    } else {
-        $response = array('status' => 'error', 'message' => 'Invalid Request');
-        return false;
+
+        $row = $result->fetch_assoc();
+        $prefix = htmlspecialchars($row["prefix"]);
+        $RecipientName = htmlspecialchars($row["firstname"]);
+        $reviewDueDate = date('F j, Y', strtotime('+14 days'));
+
+        $config = \Brevo\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $apiKey);
+        $apiInstance = new \Brevo\Client\Api\TransactionalEmailsApi(
+            new \GuzzleHttp\Client(), 
+            $config
+        );
+
+        // Create email object
+        $email = new \Brevo\Client\Model\SendSmtpEmail();
+        
+        // Set sender
+        $sender = new \Brevo\Client\Model\SendSmtpEmailSender();
+        $sender->setEmail($senderEmail);
+        $sender->setName('ASFI Research Journal');
+        $email->setSender($sender);
+
+        // Set recipient
+        $email->setTo([['email' => $RecipientEmail, 'name' => "$prefix $RecipientName"]]);
+        
+        // Set CC recipients if provided
+        if (!empty($ccEmails) && is_array($ccEmails)) {
+            $ccRecipients = [];
+            foreach ($ccEmails as $ccEmail) {
+                if (filter_var($ccEmail, FILTER_VALIDATE_EMAIL)) {
+                    $ccRecipients[] = ['email' => $ccEmail];
+                }
+            }
+            if (!empty($ccRecipients)) {
+                $email->setCc($ccRecipients);
+            }
+        }
+
+        // Set BCC recipients if provided
+        if (!empty($bccEmails) && is_array($bccEmails)) {
+            $bccRecipients = [];
+            foreach ($bccEmails as $bccEmail) {
+                if (filter_var($bccEmail, FILTER_VALIDATE_EMAIL)) {
+                    $bccRecipients[] = ['email' => $bccEmail];
+                }
+            }
+            if (!empty($bccRecipients)) {
+                $email->setBcc($bccRecipients);
+            }
+        }
+
+        // Set subject
+        $email->setSubject("Invitation to Review Manuscript (ID: $manuscriptId) - ASFI Research Journal");
+        
+        // Create dashboard link
+        $dashboardLink = "https://asfirj.org/portal/reviewer/dashboard?mid=$manuscriptId";
+
+        // HTML content with proper styling
+        $htmlContent = <<<EOT
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Invitation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .button { background-color: #3498db; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 15px 0; }
+        .footer { font-size: 0.8em; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 15px; margin-top: 30px; }
+        .highlight { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>ASFI Research Journal</h2>
+        <p>Manuscript ID: $manuscriptId</p>
+        <p>Date: {$currentYear}</p>
+    </div>
+    
+    <p>Dear $prefix $RecipientName,</p>
+    
+    <div class="highlight">
+        <p>Thank you for accepting to review this manuscript for ASFI Research Journal.</p>
+    </div>
+    
+    <p>The manuscript files are now available in your reviewer dashboard:</p>
+    
+    <a href="$dashboardLink" class="button">Access Reviewer Dashboard</a>
+    
+    <p>On the Reviewer Scoring Sheet, you will provide your evaluation, scoring, and rating of the different aspects of the manuscript.</p>
+    
+    <p>For detailed instructions, please visit: <a href="https://asfirj.org/reviewers.html">Reviewer Guidelines</a></p>
+    
+    <p><strong>Please submit your review by: $reviewDueDate</strong></p>
+    
+    <div class="footer">
+        <p>Sincerely,</p>
+        <p>The Editorial Team<br>
+        <a href="mailto:submissions@asfirj.org">submissions@asfirj.org</a></p>
+        
+        <p>ASFI Research Journal<br>
+        Excellence. Quality. Impact<br>
+        "Raising the bar of scientific publishing in Africa"</p>
+        
+        <p style="margin-top: 20px;">
+            <a href="https://asfirj.org/">Website</a> | 
+            <a href="https://asfirj.org/contact">Contact Us</a>
+        </p>
+    </div>
+</body>
+</html>
+EOT;
+
+        $email->setHtmlContent($htmlContent);
+
+        // Send email
+        $response = $apiInstance->sendTransacEmail($email);
+
+        // Update database status
+        $stmt = $con->prepare("UPDATE `sent_emails` SET `status` = 'Delivered', `delivered_at` = NOW() WHERE `article_id` = ? AND `sender` = ? AND `subject` = ?");
+        $stmt->bind_param("sss", $manuscriptId, $senderEmail, $subject);
+        $stmt->execute();
+
+        return ['status' => 'success', 'message' => 'Review acceptance email sent successfully'];
+
+    } catch (\Brevo\Client\ApiException $e) {
+        error_log("Brevo API Exception: " . $e->getMessage());
+        
+        // Update database with failure status
+        $stmt = $con->prepare("UPDATE `sent_emails` SET `status` = 'Failed', `error_message` = ? WHERE `article_id` = ? AND `sender` = ? AND `subject` = ?");
+        if ($stmt) {
+            $errorMsg = substr($e->getMessage(), 0, 255);
+            $stmt->bind_param("ssss", $errorMsg, $manuscriptId, $senderEmail, $subject);
+            $stmt->execute();
+        }
+        
+        return ['status' => 'error', 'message' => 'Failed to send email: ' . $e->getMessage()];
+    } catch (Exception $e) {
+        error_log("General Exception: " . $e->getMessage());
+        return ['status' => 'error', 'message' => $e->getMessage()];
     }
 }
-?>

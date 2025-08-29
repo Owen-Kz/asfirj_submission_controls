@@ -2,7 +2,7 @@
 
 function isAdminAccount($accountID){
     include "../db.php";
-    $userID = $_SESSION["user_id"];
+    $userID = $accountID;
     echo $userID;
     
     $stmt = $con->prepare("SELECT * FROM `editors` WHERE `id` = ? AND (`editorial_level` = 'editor_in_chief' OR `editorial_level` = 'editorial_assistant')");

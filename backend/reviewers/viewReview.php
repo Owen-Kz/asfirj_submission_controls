@@ -4,7 +4,6 @@ include "../cors.php";
 include "../db.php";
 
 $submission_id  = $_GET["a_id"];
-
 if(isset($_GET["a_id"])){
     $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `review_id` = ?");
     $stmt->bind_param("s", $submission_id);

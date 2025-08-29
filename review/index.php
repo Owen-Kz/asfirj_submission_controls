@@ -12,35 +12,94 @@ function UpdateSubmissionsTable($article_id, $reviewStatus){
     if($stmt->execute()){
         // print_r("Submission Updated Successfully");
     }else{
-        // print_r("Could Not Execite Statement");
+        // print_r("Could Not Execute Statement");
     }
 }
+
 function MoveFile($outputFile, $designatedDirectory, $newFilename){
     // Move the final merged PDF to the designated folder
-$manuscriptFile = basename($_FILES[$outputFile]["name"]);
-$targetFile = "../uploads/reviews/". $manuscriptFile;
-if (!is_writable("../uploads/reviews/")) {
-    die("Target directory is not writable.");
-}
-if (!file_exists("../uploads/reviews/")) {
-    mkdir("../uploads/reviews/", 0777, true);
-}
-if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {
-// move_uploaded_file($outputFile["tmp_name"], $targetFile);
-rename("../uploads/reviews/". $_FILES[$outputFile]["name"], "../uploads/reviews/".$newFilename);
-// print_r("File Uploaded");
-}else{
-   echo "Could Not Upload File ".json_encode($_FILES[$outputFile]);
+    $manuscriptFile = basename($_FILES[$outputFile]["name"]);
+    $targetFile = "../uploads/reviews/". $manuscriptFile;
+    if (!is_writable("../uploads/reviews/")) {
+        die("Target directory is not writable.");
+    }
+    if (!file_exists("../uploads/reviews/")) {
+        mkdir("../uploads/reviews/", 0777, true);
+    }
+    if (move_uploaded_file($_FILES[$outputFile]["tmp_name"], $targetFile)) {
+        rename("../uploads/reviews/". $_FILES[$outputFile]["name"], "../uploads/reviews/".$newFilename);
+    }else{
+        echo "Could Not Upload File ".json_encode($_FILES[$outputFile]);
+    }
 }
 
-
+// Check if invitation is valid
+function isInvitationValid($article_id, $reviewer_email) {
+    include "../backend/db.php";
+    
+    // Check if invitation exists and is still valid
+    $stmt = $con->prepare("SELECT * FROM `submitted_for_review` WHERE `article_id` = ? AND `reviewer_email` = ?");
+    $stmt->bind_param("ss", $article_id, $reviewer_email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if(mysqli_num_rows($result) === 0) {
+        return array("valid" => false, "message" => "No invitation found for this article");
+    }
+    
+    $invitation = $result->fetch_assoc();
+    
+    // Check if invitation status is correct
+    if($invitation['status'] !== 'review_invitation_accepted') {
+        return array("valid" => false, "message" => "Invitation not accepted or already processed");
+    }
+    
+    // Check if invitation has expired (more than 14 days old)
+    $invitationDate = new DateTime($invitation['date_submitted']);
+    $currentDate = new DateTime();
+    $daysDifference = $currentDate->diff($invitationDate)->days;
+    
+    if($daysDifference > 14) {
+        return array("valid" => false, "message" => "Invitation has expired (more than 14 days old)");
+    }
+    
+    return array("valid" => true, "invitation" => $invitation);
 }
+
+// Check if review already submitted
+function isReviewAlreadySubmitted($article_id, $reviewer_email) {
+    include "../backend/db.php";
+    
+    $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `article_id` = ? AND `reviewer_email` = ? AND `review_status` = 'review_submitted'");
+    $stmt->bind_param("ss", $article_id, $reviewer_email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    return mysqli_num_rows($result) > 0;
+}
+
 $Article_id = $_POST["article_id"];
 $Review_Id = "ASFIRJ_rev_".date("Y")."_".bin2hex(random_bytes(7));
 $Reviewed_by = $_POST["reviewed_by"];
 $reviewerEmail = $Reviewed_by;
-$one_paragraph_comment = $_POST["paragraph_summary"]; 
 
+// Validate invitation before processing
+$invitationCheck = isInvitationValid($Article_id, $reviewerEmail);
+if(!$invitationCheck['valid']) {
+    $response = array("status" => "error", "message" => $invitationCheck['message']);
+    echo json_encode($response);
+    exit();
+}
+
+// Check if review already submitted
+if(isReviewAlreadySubmitted($Article_id, $reviewerEmail)) {
+    $response = array("status" => "error", "message" => "Review has already been submitted for this article");
+    echo json_encode($response);
+    exit();
+}
+
+// Process the review data
+$one_paragraph_comment = $_POST["paragraph_summary"]; 
 $one_paragraph_file = "";
 $one_paragraph_file_main = $_FILES["paragraph_summary_file"];
 if(isset($one_paragraph_file_main) && $one_paragraph_file_main["size"] > 0 && isset($_FILES["paragraph_summary_file"]["tmp_name"])){
@@ -48,30 +107,24 @@ if(isset($one_paragraph_file_main) && $one_paragraph_file_main["size"] > 0 && is
     MoveFile("paragraph_summary_file", __DIR__."/uploads/reviews", $one_paragraph_file);
 }
 
-
 $general_comment = $_POST["general_comment"];
 $general_comment_file = "";
 $general_comment_file_main = $_FILES["general_comment_file"];
-
 if(isset($general_comment_file_main) && $general_comment_file_main["size"] > 0 && isset($_FILES["general_comment_file"]["tmp_name"])){
     $general_comment_file = "generalcomment". '-' . basename($general_comment_file_main["name"]);
-
     MoveFile("general_comment_file",  __DIR__."/uploads/reviews", $general_comment_file);
 }
-
 
 $specific_comment = $_POST["specific_comment"];
 $specific_comment_file = "";
 $specific_comment_file_main = $_FILES["specific_comment_file"];
 if(isset($specific_comment_file_main) && $specific_comment_file_main["size"] > 0 && isset($_FILES["specific_comment_file"]["tmp_name"])){
-
     $specific_comment_file = "specificcomment". '-' . basename($specific_comment_file_main["name"]);
-
     MoveFile("specific_comment_file",  __DIR__."/uploads/reviews", $specific_comment_file);
 }
 
+// Get all the score values
 $accurately_reflect_manuscript_subject_score = $_POST["title_accuracy"];
-
 $clearly_summarize_content_score = $_POST["abstract_summarize"];
 $presents_what_is_known_score = $_POST["man_present"];
 $gives_accurate_summary_score = $_POST["accurate_summary"];
@@ -103,9 +156,8 @@ $overall_recommendation = $_POST["recommendation"];
 $letter_to_editor = $_POST["letter_to_editor"];
 $reviewStatus = $_POST["review_status"];
 
-
 if(isset($Article_id) && isset($Review_Id)){
-    // Check if the reveiw Already Exists
+    // Check if the review Already Exists
     $stmt = $con->prepare("SELECT * FROM `reviews` WHERE `article_id` = ? AND `reviewer_email` = ?");
     if(!$stmt){
         echo $con->error;
@@ -114,132 +166,136 @@ if(isset($Article_id) && isset($Review_Id)){
     $stmt->execute();
     $result = $stmt->get_result();
     $count = mysqli_num_rows($result);
-    if($count>0){
-        // "Update the Exisiting REview instread"
-        $stmt = $con->prepare("UPDATE `reviews` SET `one_paragraph_comment`=?,`one_paragraph_file`=?,`general_comment`=?,`general_comment_file`=?,`specific_comment`=?,`specific_comment_file`=?,`accurately_reflect_manuscript_subject_score`=?,`clearly_summarize_content_score`=?,`presents_what_is_known_score`=?,`gives_accurate_summary_score`=?,`purpose_clear_score`=?,`method_section_clear_score`=?,`study_materials_clearly_described_score`=?,`research_method_valid_score`=?,`ethical_standards_score`=?,`study_find_clearly_described_score`=?,`result_presented_logical_score`=?,`graphics_complement_result_score`=?,`table_follow_specified_standards_score`=?,`tables_add_value_or_distract_score`=?,`issues_with_title_score`=?,`manuscript_present_summary_of_key_findings_score`=?,`manuscript_highlight_strength_of_study_score`=?,`manuscript_compare_findings_score`=?,`manuscript_discuss_meaning_score`=?,`manuscript_describes_overall_story_score`=?,`conclusions_reflect_achievement_score`='?,`manuscript_describe_gaps_score`=?,`referencing_accurate_score`=?,`novelty_score`=?,`quality_score`=?,`scientific_accuracy_score`=?,`overall_merit_score`=?,`english_level_score`=?,`overall_recommendation`=?,`letter_to_editor`=?,`review_status`=?,`date_created`=? WHERE `article_id` = ? AND `reviewer_email` = ?");
-        $stmt->bind_param("sssssssssssssssssssssssssssssssssssssss",  $one_paragraph_comment,
-        $one_paragraph_file,
-        $general_comment,
-        $general_comment_file,
-        $specific_comment,
-        $specific_comment_file,
-        $accurately_reflect_manuscript_subject_score,
-        $clearly_summarize_content_score,
-        $presents_what_is_known_score,
-        $gives_accurate_summary_score,
-        $purpose_clear_score,
-        $method_section_clear_score,
-        $study_materials_clearly_described_score,
-        $research_method_valid_score,
-        $ethical_standards_score,
-        $study_find_clearly_described_score,
-        $result_presented_logical_score,
-        $graphics_complement_result_score,
-        $table_follow_specified_standards_score,
-        $tables_add_value_or_distract_score,
-        $issues_with_title_score,
-        $manuscript_present_summary_of_key_findings_score,
-        $manuscript_highlight_strength_of_study_score,
-        $manuscript_compare_findings_score,
-        $manuscript_discuss_meaning_score,
-        $manuscript_describes_overall_story_score,
-        $conclusions_reflect_achievement_score,
-        $manuscript_describe_gaps_score,
-        $referencing_accurate_score,
-        $novelty_score,
-        $quality_score,
-        $scientific_accuracy_score,
-        $overall_merit_score,
-        $english_level_score,
-        $overall_recommendation,
-        $letter_to_editor,
-        $reviewStatus,
-        $Article_id,
-        $Reviewed_by     
-    );
-    if($stmt->execute()){
-        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = ? WHERE `article_id` =? AND `reviewer_email` = ?");
-        $stmt->bind_param("sss", $reviewStatus, $Article_id,$Reviewed_by);
-        $stmt->execute();
-        if($reviewStatus === "review_submitted"){
-          UpdateSubmissionsTable($Article_id, $reviewStatus);
-        }
-        $response = array("status" => "success", "message" => "Review Updated successfully");
-        echo json_encode($response);
+    
+    if($count > 0){
+        // Update the Existing Review
+        $stmt = $con->prepare("UPDATE `reviews` SET `one_paragraph_comment`=?,`one_paragraph_file`=?,`general_comment`=?,`general_comment_file`=?,`specific_comment`=?,`specific_comment_file`=?,`accurately_reflect_manuscript_subject_score`=?,`clearly_summarize_content_score`=?,`presents_what_is_known_score`=?,`gives_accurate_summary_score`=?,`purpose_clear_score`=?,`method_section_clear_score`=?,`study_materials_clearly_described_score`=?,`research_method_valid_score`=?,`ethical_standards_score`=?,`study_find_clearly_described_score`=?,`result_presented_logical_score`=?,`graphics_complement_result_score`=?,`table_follow_specified_standards_score`=?,`tables_add_value_or_distract_score`=?,`issues_with_title_score`=?,`manuscript_present_summary_of_key_findings_score`=?,`manuscript_highlight_strength_of_study_score`=?,`manuscript_compare_findings_score`=?,`manuscript_discuss_meaning_score`=?,`manuscript_describes_overall_story_score`=?,`conclusions_reflect_achievement_score`=?,`manuscript_describe_gaps_score`=?,`referencing_accurate_score`=?,`novelty_score`=?,`quality_score`=?,`scientific_accuracy_score`=?,`overall_merit_score`=?,`english_level_score`=?,`overall_recommendation`=?,`letter_to_editor`=?,`review_status`=?,`date_created`=NOW() WHERE `article_id` = ? AND `reviewer_email` = ?");
+        
+        $stmt->bind_param("sssssssssssssssssssssssssssssssssssssss",  
+            $one_paragraph_comment,
+            $one_paragraph_file,
+            $general_comment,
+            $general_comment_file,
+            $specific_comment,
+            $specific_comment_file,
+            $accurately_reflect_manuscript_subject_score,
+            $clearly_summarize_content_score,
+            $presents_what_is_known_score,
+            $gives_accurate_summary_score,
+            $purpose_clear_score,
+            $method_section_clear_score,
+            $study_materials_clearly_described_score,
+            $research_method_valid_score,
+            $ethical_standards_score,
+            $study_find_clearly_described_score,
+            $result_presented_logical_score,
+            $graphics_complement_result_score,
+            $table_follow_specified_standards_score,
+            $tables_add_value_or_distract_score,
+            $issues_with_title_score,
+            $manuscript_present_summary_of_key_findings_score,
+            $manuscript_highlight_strength_of_study_score,
+            $manuscript_compare_findings_score,
+            $manuscript_discuss_meaning_score,
+            $manuscript_describes_overall_story_score,
+            $conclusions_reflect_achievement_score,
+            $manuscript_describe_gaps_score,
+            $referencing_accurate_score,
+            $novelty_score,
+            $quality_score,
+            $scientific_accuracy_score,
+            $overall_merit_score,
+            $english_level_score,
+            $overall_recommendation,
+            $letter_to_editor,
+            $reviewStatus,
+            $Article_id,
+            $Reviewed_by     
+        );
+        
+        if($stmt->execute()){
+            $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = ? WHERE `article_id` =? AND `reviewer_email` = ?");
+            $stmt->bind_param("sss", $reviewStatus, $Article_id, $Reviewed_by);
+            $stmt->execute();
+            
+            if($reviewStatus === "review_submitted"){
+                UpdateSubmissionsTable($Article_id, $reviewStatus);
+            }
+            
+            $response = array("status" => "success", "message" => "Review Updated successfully");
+            echo json_encode($response);
         }else{
-                  // update the submission status in the table 
-  
-
-        $response = array("status" => "error", "message" => $stmt->error);
-        echo json_encode($response);
+            $response = array("status" => "error", "message" => $stmt->error);
+            echo json_encode($response);
         }
-  
     }else{
-        // If this is the firsttime the review qa initiated
-    // Add the Review to the database 
-    $stmt = $con->prepare("INSERT INTO `reviews` (`article_id`, `review_id`, `reviewer_email`, `one_paragraph_comment`, `one_paragraph_file`, `general_comment`, `general_comment_file`, `specific_comment`, `specific_comment_file`, `accurately_reflect_manuscript_subject_score`, `clearly_summarize_content_score`, `presents_what_is_known_score`, `gives_accurate_summary_score`, `purpose_clear_score`, `method_section_clear_score`, `study_materials_clearly_described_score`, `research_method_valid_score`, `ethical_standards_score`, `study_find_clearly_described_score`, `result_presented_logical_score`, `graphics_complement_result_score`, `table_follow_specified_standards_score`, `tables_add_value_or_distract_score`, `issues_with_title_score`, `manuscript_present_summary_of_key_findings_score`, `manuscript_highlight_strength_of_study_score`, `manuscript_compare_findings_score`, `manuscript_discuss_meaning_score`, `manuscript_describes_overall_story_score`, `conclusions_reflect_achievement_score`, `manuscript_describe_gaps_score`, `referencing_accurate_score`, `novelty_score`, `quality_score`, `scientific_accuracy_score`, `overall_merit_score`, `english_level_score`, `overall_recommendation`, `letter_to_editor`, `review_status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-    $stmt->bind_param("ssssssssssssssssssssssssssssssssssssssss", $Article_id,
-    $Review_Id,
-    $Reviewed_by,
-    $one_paragraph_comment,
-    $one_paragraph_file,
-    $general_comment,
-    $general_comment_file,
-    $specific_comment,
-    $specific_comment_file,
-    $accurately_reflect_manuscript_subject_score,
-    $clearly_summarize_content_score,
-    $presents_what_is_known_score,
-    $gives_accurate_summary_score,
-    $purpose_clear_score,
-    $method_section_clear_score,
-    $study_materials_clearly_described_score,
-    $research_method_valid_score,
-    $ethical_standards_score,
-    $study_find_clearly_described_score,
-    $result_presented_logical_score,
-    $graphics_complement_result_score,
-    $table_follow_specified_standards_score,
-    $tables_add_value_or_distract_score,
-    $issues_with_title_score,
-    $manuscript_present_summary_of_key_findings_score,
-    $manuscript_highlight_strength_of_study_score,
-    $manuscript_compare_findings_score,
-    $manuscript_discuss_meaning_score,
-    $manuscript_describes_overall_story_score,
-    $conclusions_reflect_achievement_score,
-    $manuscript_describe_gaps_score,
-    $referencing_accurate_score,
-    $novelty_score,
-    $quality_score,
-    $scientific_accuracy_score,
-    $overall_merit_score,
-    $english_level_score,
-    $overall_recommendation,
-    $letter_to_editor,
-    $reviewStatus
-);
+        // If this is the first time the review is initiated
+        $stmt = $con->prepare("INSERT INTO `reviews` (`article_id`, `review_id`, `reviewer_email`, `one_paragraph_comment`, `one_paragraph_file`, `general_comment`, `general_comment_file`, `specific_comment`, `specific_comment_file`, `accurately_reflect_manuscript_subject_score`, `clearly_summarize_content_score`, `presents_what_is_known_score`, `gives_accurate_summary_score`, `purpose_clear_score`, `method_section_clear_score`, `study_materials_clearly_described_score`, `research_method_valid_score`, `ethical_standards_score`, `study_find_clearly_described_score`, `result_presented_logical_score`, `graphics_complement_result_score`, `table_follow_specified_standards_score`, `tables_add_value_or_distract_score`, `issues_with_title_score`, `manuscript_present_summary_of_key_findings_score`, `manuscript_highlight_strength_of_study_score`, `manuscript_compare_findings_score`, `manuscript_discuss_meaning_score`, `manuscript_describes_overall_story_score`, `conclusions_reflect_achievement_score`, `manuscript_describe_gaps_score`, `referencing_accurate_score`, `novelty_score`, `quality_score`, `scientific_accuracy_score`, `overall_merit_score`, `english_level_score`, `overall_recommendation`, `letter_to_editor`, `review_status`, `date_created`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW())");
+        
+        $stmt->bind_param("ssssssssssssssssssssssssssssssssssssssss", 
+            $Article_id,
+            $Review_Id,
+            $Reviewed_by,
+            $one_paragraph_comment,
+            $one_paragraph_file,
+            $general_comment,
+            $general_comment_file,
+            $specific_comment,
+            $specific_comment_file,
+            $accurately_reflect_manuscript_subject_score,
+            $clearly_summarize_content_score,
+            $presents_what_is_known_score,
+            $gives_accurate_summary_score,
+            $purpose_clear_score,
+            $method_section_clear_score,
+            $study_materials_clearly_described_score,
+            $research_method_valid_score,
+            $ethical_standards_score,
+            $study_find_clearly_described_score,
+            $result_presented_logical_score,
+            $graphics_complement_result_score,
+            $table_follow_specified_standards_score,
+            $tables_add_value_or_distract_score,
+            $issues_with_title_score,
+            $manuscript_present_summary_of_key_findings_score,
+            $manuscript_highlight_strength_of_study_score,
+            $manuscript_compare_findings_score,
+            $manuscript_discuss_meaning_score,
+            $manuscript_describes_overall_story_score,
+            $conclusions_reflect_achievement_score,
+            $manuscript_describe_gaps_score,
+            $referencing_accurate_score,
+            $novelty_score,
+            $quality_score,
+            $scientific_accuracy_score,
+            $overall_merit_score,
+            $english_level_score,
+            $overall_recommendation,
+            $letter_to_editor,
+            $reviewStatus
+        );
 
-    if($stmt->execute()){
-        $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = ? WHERE `article_id` =?");
-        $stmt->bind_param("ss", $reviewStatus, $Article_id);
-        $stmt->execute();
-            // update the submission status in the table 
+        if($stmt->execute()){
+            $stmt = $con->prepare("UPDATE `submitted_for_review` SET `status` = ? WHERE `article_id` =? AND `reviewer_email` = ?");
+            $stmt->bind_param("sss", $reviewStatus, $Article_id, $Reviewed_by);
+            $stmt->execute();
+            
             if($reviewStatus === "review_submitted"){
                 $stmt = $con->prepare("UPDATE `invitations` SET `invitation_status` = ? WHERE `invitation_link` =? AND `invited_user` = ?");
                 $stmt->bind_param("sss", $reviewStatus, $Article_id, $reviewerEmail);
                 $stmt->execute();
-               UpdateSubmissionsTable($Article_id, $reviewStatus);
+                UpdateSubmissionsTable($Article_id, $reviewStatus);
             }
-    $response = array("status" => "success", "message" => "Review Submitted successfully");
-    echo json_encode($response);
-    }else{
-    $response = array("status" => "error", "message" => $stmt->error);
-    echo json_encode($response);
+            
+            $response = array("status" => "success", "message" => "Review Submitted successfully");
+            echo json_encode($response);
+        }else{
+            $response = array("status" => "error", "message" => $stmt->error);
+            echo json_encode($response);
+        }
     }
-}
 }else{
-    $response = array("status" => "error", "message" => "incomplete Fields");
+    $response = array("status" => "error", "message" => "Incomplete Fields");
     echo json_encode($response);
 }
-
+?>

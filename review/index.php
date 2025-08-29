@@ -107,8 +107,8 @@ function isReviewAlreadySubmitted($article_id, $reviewer_email) {
 }
 
 // Log received data for debugging
-error_log("POST data: " . print_r($_POST, true));
-error_log("FILES data: " . print_r($_FILES, true));
+// error_log("POST data: " . print_r($_POST, true));
+// error_log("FILES data: " . print_r($_FILES, true));
 
 // Check if required fields are present
 if (!isset($_POST["article_id"]) || !isset($_POST["reviewed_by"]) || !isset($_POST["review_status"])) {

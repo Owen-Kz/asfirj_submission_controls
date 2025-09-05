@@ -17,7 +17,7 @@ if (isset($adminId)) {
                             ORDER BY s.revision_id DESC, s.process_start_date DESC
                         ) AS row_num
                     FROM archived_submissions s
-                    WHERE s.title != ''
+                    WHERE s.title != '' AND s.title != 'Draft Submission'
                 )
                 SELECT *
                 FROM RankedSubmissions 

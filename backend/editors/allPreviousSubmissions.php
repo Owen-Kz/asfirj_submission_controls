@@ -10,14 +10,14 @@ $revisionID = $data["item_id"];
 $mainId = $revisionID;
 // if (($pos = strpos($revisionID, '.R')) !== false) {
 //     $revisionID = substr($revisionID, 0, $pos);
-//     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `revision_id` != ? AND title != ''");
+//     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND `revision_id` != ? AND title != '' AND title != 'Draft Submission'");
 // }else{
-//     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ?  AND title != ''");
+//     $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ?  AND title != '' AND title != 'Draft Submission'");
 // }
 if (isset($adminId)) { 
     $isAdminAccount = isAdminAccount($adminId);
     if ($isAdminAccount) {
-        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND title != '' ORDER BY `id` DESC");
+        $stmt = $con->prepare("SELECT * FROM `submissions` WHERE `article_id` = ? AND title != '' AND title != 'Draft Submission' ORDER BY `id` DESC");
         if (!$stmt) {
             echo json_encode(array("error" => $stmt->error));
         }

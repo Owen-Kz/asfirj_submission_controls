@@ -7,7 +7,7 @@ session_start();
 $userId = $_GET["u_id"];
 
 if(isset($userId)){
-    $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submissions` WHERE `corresponding_authors_email` = ? AND `title` != ''");
+    $stmt = $con->prepare("SELECT COUNT(*) AS `count` FROM `submissions` WHERE `corresponding_authors_email` = ? AND `title` != '' AND title != 'Draft Submission'");
     $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();

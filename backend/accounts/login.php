@@ -15,7 +15,7 @@ if (isset($pass) && isset($email_post)) {
 
     $userID = mysqli_real_escape_string($con, $email_post);
 
-    $stmt = $con->prepare("SELECT * FROM `authors_account` WHERE `email` = ? LIMIT 1");
+    $stmt = $con->prepare("SELECT `id`, `prefix`, `email`, `firstname`, `lastname`, `othername`, `orcid_id`, `discipline`, `affiliations`, `affiliation_country`, `affiliation_city`, `is_available_for_review`, `is_editor`, `is_reviewer`, `editor_invite_status`, `reviewer_invite_status`, `account_status`, `asfi_membership_id`, `date_joined` FROM `authors_account` WHERE `email` = ? LIMIT 1");
     if (!$stmt) {
         echo json_encode(array("error" => $con->error));
         exit;

@@ -16,14 +16,14 @@ if (!isset($email)) {
 // $email = $email;
 
 // Prepare SQL query
-$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ?");
+$stmt = $con->prepare("SELECT * FROM `authors_account` WHERE md5(`id`) = ? OR md5(`email`) = ? OR email = ? LIMIT 1");
 if (!$stmt) {
     $response = array("status" => "error", "message" => "Database error: " . $con->error);
     echo json_encode($response);
     exit();
 }
 
-$stmt->bind_param("s", $email);
+$stmt->bind_param("sss", $email, $email, $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
